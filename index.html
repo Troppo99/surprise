@@ -21,11 +21,13 @@
       transform: translate(-50%,-50%) scale(var(--scale)) rotate(var(--rot));
       line-height:1; user-select:none; pointer-events:none;
       filter: drop-shadow(0 12px 24px hsl(0 0% 0% / .25));
-      opacity:.96; animation: float var(--dur) linear forwards }
+      opacity:.96; }
     .heart{ font-size: var(--size); color:hsl(var(--h) 90% 62%);
-      text-shadow: 0 0 8px hsl(var(--h) 90% 62% / .75), 0 0 18px hsl(var(--h) 90% 62% / .45), 0 6px 18px hsl(var(--h) 50% 30% / .35) }
+      text-shadow: 0 0 8px hsl(var(--h) 90% 62% / .75), 0 0 18px hsl(var(--h) 90% 62% / .45), 0 6px 18px hsl(var(--h) 50% 30% / .35);
+      animation: float var(--dur) linear forwards }
     .word{ font-size: var(--size); font-weight:700; color: hsl(0 0% 100%);
-      letter-spacing:.3px; text-shadow: 0 0 10px hsl(0 0% 100% / .7), 0 10px 30px hsl(0 0% 0% / .35) }
+      letter-spacing:.3px; text-shadow: 0 0 10px hsl(0 0% 100% / .7), 0 10px 30px hsl(0 0% 0% / .35);
+      /* animasi untuk word dikendalikan via JS (wave) */ }
 
     @keyframes float{
       to{ transform: translate(calc(-50% + var(--dx)), calc(-50% - var(--dy))) scale(var(--scaleEnd)) rotate(var(--rotEnd)); opacity:0 }
@@ -51,8 +53,8 @@
       "Curug Muara Jaya Let's go?"
     ];
 
-    const RATE_HEART = 16;
-    const RATE_WORD  = 2.6;
+    const RATE_HEART = 28; // naikin dikit
+    const RATE_WORD  = 4.2; // interval emisi kata (random 0-3/interval) // lebih cepat juga
 
     function rnd(a,b){return a + Math.random()*(b-a)}
     function pick(arr){return arr[Math.floor(Math.random()*arr.length)]}
@@ -60,27 +62,64 @@
     function spawnHeart(x, y, n=1){
       for(let i=0;i<n;i++){
         const el = document.createElement('span'); el.className = 'heart'; el.textContent = pick(['❤','💖','💗','💕','💘','❤️‍🔥']);
-        const size=28, dur=4.8, drift= '0px', rise='90vh', hue=rnd(330,360).toFixed(1), rotS='0deg', rotE='0deg', scS='1', scE='1.18';
-        el.style.setProperty('--left', x+'px'); el.style.setProperty('--top', y+'px'); el.style.setProperty('--size', size+'px'); el.style.setProperty('--dur', dur+'s'); el.style.setProperty('--dx', drift); el.style.setProperty('--dy', rise); el.style.setProperty('--h', hue); el.style.setProperty('--rot', rotS); el.style.setProperty('--rotEnd', rotE); el.style.setProperty('--scale', scS); el.style.setProperty('--scaleEnd', scE);
-        el.addEventListener('animationend', ()=> el.remove()); field.appendChild(el);
+        const size=28, dur=rnd(4.0,6.0), hue=rnd(330,360).toFixed(1);
+        el.style.setProperty('--left', x+'px');
+        el.style.setProperty('--top', y+'px');
+        el.style.setProperty('--size', size+'px');
+        el.style.setProperty('--dur', dur+'s');
+        el.style.setProperty('--dy', '90vh');
+        el.style.setProperty('--h', hue);
+        el.style.setProperty('--rot', rnd(-15,15)+'deg');
+        el.style.setProperty('--rotEnd', rnd(-25,25)+'deg');
+        el.style.setProperty('--scale', '1');
+        el.style.setProperty('--scaleEnd', (rnd(1.05,1.2)).toFixed(2));
+        // random kelok
+        el.style.setProperty('--dx1', rnd(-40,40)+'px');
+        el.style.setProperty('--dx2', rnd(-60,60)+'px');
+        el.style.setProperty('--dx3', rnd(-40,40)+'px');
+        el.style.setProperty('--dx4', rnd(-60,60)+'px');
+        el.addEventListener('animationend', ()=> el.remove());
+        field.appendChild(el);
       }
     }
 
     function spawnWord(x, y, n=1){
       for(let i=0;i<n;i++){
         const el = document.createElement('span'); el.className = 'word'; el.textContent = pick(TEXTS);
-        const size=22, dur=5.2, drift='0px', rise='90vh', rotS='0deg', rotE='0deg', scS='1', scE='1.08';
-        el.style.setProperty('--left', x+'px'); el.style.setProperty('--top', y+'px'); el.style.setProperty('--size', size+'px'); el.style.setProperty('--dur', dur+'s'); el.style.setProperty('--dx', drift); el.style.setProperty('--dy', rise); el.style.setProperty('--rot', rotS); el.style.setProperty('--rotEnd', rotE); el.style.setProperty('--scale', scS); el.style.setProperty('--scaleEnd', scE);
-        el.addEventListener('animationend', ()=> el.remove()); field.appendChild(el);
+        const size=22; el.style.setProperty('--size', size+'px'); el.style.setProperty('--scale','1'); el.style.setProperty('--rot','0deg');
+        el.style.left = x+'px'; el.style.top = y+'px';
+        field.appendChild(el);
+        animateWord(el, {x0:x, y0:y});
       }
     }
 
-    setInterval(()=>{
-      const x=rnd(innerWidth*0.2, innerWidth*0.8), y=innerHeight-24; spawnHeart(x,y,1)
-    }, 1000/RATE_HEART);
+    function animateWord(el,{x0,y0}){
+      const amp = rnd(18, 60);        // amplitudo gelombang px
+      const freq = rnd(0.8, 2.2);     // frekuensi rad/detik
+      const phase = rnd(0, Math.PI*2);// fase awal
+      const vy = rnd(140, 200);       // kecepatan naik px/detik
+      const rotAmp = rnd(4, 14);      // derajat goyangan
+      const dur = rnd(4.5, 6.8);      // batas waktu hidup detik
+      const start = performance.now();
+
+      function step(t){
+        const s = (t - start) / 1000;
+        const y = y0 - vy * s;
+        const x = x0 + amp * Math.sin(freq * s + phase);
+        el.style.left = x + 'px';
+        el.style.top  = y + 'px';
+        el.style.opacity = String(1 - (s/dur));
+        el.style.transform = `translate(-50%,-50%) rotate(${Math.sin(freq*s+phase)*rotAmp}deg)`;
+        if(s < dur && y > -60) requestAnimationFrame(step); else el.remove();
+      }
+      requestAnimationFrame(step);
+    }
 
     setInterval(()=>{
-      const x=rnd(innerWidth*0.25, innerWidth*0.75), y=innerHeight-44; spawnWord(x,y,1)
+      const count = Math.floor(rnd(0,3.999)); // 0–3 kata per interval
+      for(let i=0;i<count;i++){
+        const x=rnd(innerWidth*0.20, innerWidth*0.80), y=innerHeight-48; spawnWord(x,y,1);
+      }
     }, 1000/RATE_WORD);
 
     addEventListener('mousemove', e=>{ document.body.style.setProperty('--mx', (e.clientX/window.innerWidth*100)+'%'); document.body.style.setProperty('--my', (e.clientY/window.innerHeight*100)+'%') });
