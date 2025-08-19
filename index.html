@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Love Emote Dinamis</title>
+  <style>
+    :root{
+      --bg-a: 320 88% 54%;
+      --bg-b: 255 88% 58%;
+      --glow: 0 0% 100% / .35;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; overflow:hidden; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
+      background:
+        radial-gradient(1000px 1000px at var(--mx,50%) var(--my,50%), hsl(0 0% 100% / .06), transparent 60%),
+        linear-gradient(135deg, hsl(var(--bg-a)), hsl(var(--bg-b)));
+      animation:bg-pan 18s linear infinite;
+    }
+    @keyframes bg-pan{0%{filter:hue-rotate(0)}100%{filter:hue-rotate(360deg)}}
+
+    #field{position:fixed; inset:0}
+
+    .heart{
+      position:absolute; left:var(--left); top:var(--top);
+      transform: translate(-50%,-50%) scale(var(--scale)) rotate(var(--rot));
+      font-size: var(--size); line-height:1; user-select:none; pointer-events:none;
+      color:hsl(var(--h) 90% 62%);
+      text-shadow:
+        0 0 8px hsl(var(--h) 90% 62% / .75),
+        0 0 18px hsl(var(--h) 90% 62% / .45),
+        0 6px 18px hsl(var(--h) 50% 30% / .35);
+      filter: drop-shadow(0 12px 24px hsl(0 0% 0% / .25));
+      opacity:.95;
+      animation: float var(--dur) cubic-bezier(.22,.7,.18,1) forwards, spin calc(var(--dur)*1.2) linear;
+    }
+    @keyframes float{
+      to{
+        transform: translate(calc(-50% + var(--dx)), calc(-50% - var(--dy))) scale(var(--scaleEnd)) rotate(var(--rotEnd));
+        opacity:0
+      }
+    }
+    @keyframes spin{to{filter: drop-shadow(0 10px 30px hsl(var(--h) 80% 60% / .35));}}
+
+    .hud{
+      position:fixed; right:16px; top:16px; display:flex; gap:12px; align-items:center;
+      background:hsl(0 0% 100% / .14); backdrop-filter: blur(8px);
+      border:1px solid hsl(0 0% 100% / .2); padding:10px 12px; border-radius:16px;
+      box-shadow: 0 10px 24px hsl(0 0% 0% / .2);
+      color:white;
+    }
+    .hud label{font-size:14px; opacity:.9}
+    .hud .sep{width:1px; height:20px; background:hsl(0 0% 100% / .25)}
+    .hud input[type="range"]{width:130px}
+    .brand{position:fixed; left:16px; bottom:16px; color:white; opacity:.8; font-weight:600; letter-spacing:.4px}
+
+    .hint{position:fixed; inset:0; display:grid; place-items:center; pointer-events:none}
+    .hint b{color:white; background:hsl(0 0% 100% / .12); border:1px solid hsl(0 0% 100% / .2); padding:8px 12px; border-radius:12px; backdrop-filter: blur(6px); animation:out 3.2s ease 1 forwards}
+    @keyframes out{70%{opacity:1}100%{opacity:0; transform:translateY(-8px)}}
+
+    /* tombol */
+    .btn{appearance:none; border:1px solid hsl(0 0% 100% / .25); background:hsl(0 0% 100% / .1); color:white; padding:8px 10px; border-radius:10px; cursor:pointer}
+    .btn:active{transform:translateY(1px)}
+    .switch{display:inline-flex; align-items:center; gap:6px}
+  </style>
+</head>
+<body>
+  <div id="field" aria-hidden="true"></div>
+
+  <div class="hud">
+    <label class="switch"><input id="auto" type="checkbox" checked><span>Auto</span></label>
+    <div class="sep"></div>
+    <label>Kecepatan <input id="rate" type="range" min="0" max="60" step="1" value="18"></label>
+    <div class="sep"></div>
+    <button id="burst" class="btn">Burst</button>
+    <button id="clear" class="btn">Clear</button>
+  </div>
+
+  <div class="brand">Klik / tahan & drag untuk love ❤</div>
+  <div class="hint"><b>Double‑click untuk fireworks</b></div>
+
+  <script>
+    const field = document.getElementById('field');
+    const rateEl = document.getElementById('rate');
+    const autoEl = document.getElementById('auto');
+    const burstBtn = document.getElementById('burst');
+    const clearBtn = document.getElementById('clear');
+
+    let autoTimer = null;
+
+    function rnd(a,b){return a + Math.random()*(b-a)}
+    function pick(arr){return arr[Math.floor(Math.random()*arr.length)]}
+
+    function spawn(x, y, n=1){
+      for(let i=0;i<n;i++){
+        const span = document.createElement('span');
+        span.className = 'heart';
+        span.textContent = pick(['❤','💖','💗','💕','💘','❤️‍🔥']);
+
+        const size = rnd(14, 42);
+        const dur  = rnd(2.2, 5.0);
+        const drift = rnd(-140, 140) + 'px';
+        const rise  = rnd(70, 110) + 'vh';
+        const hue   = rnd(330, 360).toFixed(1);
+        const rotS  = rnd(-18, 18) + 'deg';
+        const rotE  = rnd(-45, 45) + 'deg';
+        const scS   = (rnd(.85, 1.25)).toFixed(2);
+        const scE   = (rnd(1.1, 1.6)).toFixed(2);
+
+        span.style.setProperty('--left', x + 'px');
+        span.style.setProperty('--top',  y + 'px');
+        span.style.setProperty('--size', size + 'px');
+        span.style.setProperty('--dur',  dur + 's');
+        span.style.setProperty('--dx',   drift);
+        span.style.setProperty('--dy',   rise);
+        span.style.setProperty('--h',    hue);
+        span.style.setProperty('--rot',  rotS);
+        span.style.setProperty('--rotEnd', rotE);
+        span.style.setProperty('--scale', scS);
+        span.style.setProperty('--scaleEnd', scE);
+
+        span.addEventListener('animationend', ()=> span.remove());
+        field.appendChild(span);
+      }
+    }
+
+    function autoStart(){
+      autoStop();
+      const r = +rateEl.value; if(!autoEl.checked || r<=0) return;
+      const ms = 1000 / r;
+      autoTimer = setInterval(()=>{
+        const x = rnd(innerWidth*0.15, innerWidth*0.85);
+        const y = innerHeight - 20;
+        spawn(x, y, 1);
+      }, ms);
+    }
+    function autoStop(){ if(autoTimer){ clearInterval(autoTimer); autoTimer=null } }
+
+    rateEl.addEventListener('input', autoStart);
+    autoEl.addEventListener('change', autoStart);
+
+    burstBtn.addEventListener('click', ()=>{
+      const x = innerWidth/2, y = innerHeight*0.7; spawn(x, y, 32);
+    });
+    clearBtn.addEventListener('click', ()=>{
+      document.querySelectorAll('.heart').forEach(n=>n.remove())
+    });
+
+    let drawing=false, touchId=null;
+    function spawnFromEvent(e, k=1){
+      const p = getPoint(e); if(!p) return; spawn(p.x, p.y, k)
+    }
+    function getPoint(e){
+      if(e.touches && e.touches.length){
+        const t = touchId ? [...e.touches].find(t=>t.identifier===touchId) : e.touches[0];
+        return t ? {x:t.clientX, y:t.clientY} : null;
+      }
+      return {x:e.clientX, y:e.clientY};
+    }
+
+    field.addEventListener('pointerdown', e=>{ drawing=true; spawnFromEvent(e, 6) })
+    addEventListener('pointerup',   ()=> drawing=false)
+    addEventListener('pointermove', e=>{ if(drawing) spawnFromEvent(e, 2) })
+
+    field.addEventListener('dblclick', e=>{ spawnFromEvent(e, 36) })
+
+    addEventListener('mousemove', e=>{
+      document.body.style.setProperty('--mx', (e.clientX/window.innerWidth*100)+'%');
+      document.body.style.setProperty('--my', (e.clientY/window.innerHeight*100)+'%');
+    });
+
+    autoStart();
+  </script>
+</body>
+</html>
