@@ -33,9 +33,9 @@
   </style>
 </head>
 <body>
-  <audio autoplay loop hidden>
-    <source src="Naif.mp3" type="audio/mpeg">
-  </audio>
+<audio id="bgm" autoplay loop muted>
+  <source src="Naif.mp3" type="audio/mpeg">
+</audio>
   <div id="field" aria-hidden="true"></div>
 
   <script>
@@ -94,6 +94,11 @@
     }, 1000/RATE_WORD);
 
     addEventListener('mousemove', e=>{ document.body.style.setProperty('--mx', (e.clientX/window.innerWidth*100)+'%'); document.body.style.setProperty('--my', (e.clientY/window.innerHeight*100)+'%') });
+    document.addEventListener("click", () => {
+    const audio = document.getElementById("bgm");
+    audio.muted = false;   // buka mute setelah klik pertama
+    audio.play();          // pastikan play dipanggil
+  }, { once: true });
   </script>
 </body>
 </html>
