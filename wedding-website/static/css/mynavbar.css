@@ -1,0 +1,19 @@
+.mynavbar {
+  background-color: rgba(255, 255, 255, 0.5) !important;
+  backdrop-filter: blur(4px);
+}
+
+.mynavbar .offcanvas {
+  height: 100vh;
+}
+
+.mynavbar .navbar-brand,
+.mynavbar .offcanvas-title {
+  font-family: 'Sacramento', cursive;
+  font-size: 3.2rem;
+  font-weight: bold;
+}
+
+.mynavbar .nav-link {
+  text-transform: uppercase;
+}
