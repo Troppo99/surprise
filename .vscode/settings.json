@@ -25,17 +25,17 @@
       "editor.formatOnSave": true
     },
   
-    "files.associations": {
-      "**/templates/**/*.html": "django-html",
-      "**/templates/**/*.htm":  "django-html"
-    },
-    "[django-html]": {
-      "editor.defaultFormatter": "monosans.djlint",  // atau "batisteo.vscode-django" jika pakai extension Batisteo
-      "editor.formatOnSave": true
-    },
-    "emmet.includeLanguages": {
-      "django-html": "html"
-    },
+    // "files.associations": {
+    //   "**/templates/**/*.html": "django-html",
+    //   "**/templates/**/*.htm":  "django-html"
+    // },
+    // "[django-html]": {
+    //   "editor.defaultFormatter": "monosans.djlint",  // atau "batisteo.vscode-django" jika pakai extension Batisteo
+    //   "editor.formatOnSave": true
+    // },
+    // "emmet.includeLanguages": {
+    //   "django-html": "html"
+    // },
   
     "black-formatter.args": ["--line-length=1000"],
   

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Love Emote + Floating Words</title>
+  <title>Surprise</title>
   <style>
     :root{ --bg-a: 320 88% 54%; --bg-b: 255 88% 58% }
     *{box-sizing:border-box} html,body{height:100%}
@@ -30,12 +30,38 @@
     @keyframes float{
       to{ transform: translate(calc(-50% + var(--dx)), calc(-50% - var(--dy))) scale(var(--scaleEnd)) rotate(var(--rotEnd)); opacity:0 }
     }
+    .nav-container{
+      position: fixed; top: 16px; right: 16px; z-index: 50;
+      display: flex; gap: 10px;
+    }
+    .nav-btn{
+      padding: 10px 14px; border: 0; border-radius: 999px;
+      font-weight: 700; letter-spacing:.2px; cursor: pointer;
+      backdrop-filter: blur(6px);
+      background: hsl(0 0% 100% / .18); color: white;
+      box-shadow: 0 6px 20px hsl(0 0% 0% / .25);
+      text-decoration: none;
+      display: inline-block;
+    }
+    .nav-btn:hover{ background:hsl(0 0% 100% /.28) }
+
+
+
   </style>
 </head>
 <body>
 <audio id="bgm" autoplay loop muted>
   <source src="Naif.mp3" type="audio/mpeg">
 </audio>
+<div class="nav-container">
+  <a href="wedding-website/index.html" target="_blank" rel="noopener" class="nav-btn">
+    Wedding
+  </a>
+  <a href="https://nwr27.github.io/nanawartana" target="_blank" rel="noopener" class="nav-btn">
+    Portfolio
+  </a>
+</div>
+
 <div id="field" aria-hidden="true"></div>
 
 <script>
@@ -52,13 +78,15 @@
     "To Salsabilla Lutfiah Rifdah",
     "Salbrut",
     "Caca Cantik",
-    "Curug Muara Jaya Let's go?",
+    // "Curug Muara Jaya Let's go?",
     "Sudah siap ngalahin aku funrun?",
     "Aku rajin cuci sepatu kok",
     "Aku mandi 2x sehari",
-    "Dasternya minjem lagi, rabu main lagi, semoga kalah lagi", 
+    "Dasternya aku cuci dulu ya", 
     "Aku orangnya gaje dan random kalo ke orang deket",
-    "Musik nyala gak?",
+    "Musik nyala gak? Nyalaa kitu meni teu dijawab hehe",
+    "Happy Weekend",
+    "Aku mau buka jasa bikin web",
     // "Terima kasih sudah tap"
   ];
 
@@ -122,7 +150,7 @@
 
   let wordInterval = null; // nanti diaktifkan setelah tap
 
-  document.addEventListener("click", () => {
+  field.addEventListener("click", () => {
     const audio = document.getElementById("bgm");
     audio.muted = false;
     audio.play();
