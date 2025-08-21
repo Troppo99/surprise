@@ -21,7 +21,7 @@
       transform: translate(-50%,-50%) scale(var(--scale)) rotate(var(--rot));
       line-height:1; user-select:none; pointer-events:none;
       filter: drop-shadow(0 12px 24px hsl(0 0% 0% / .25));
-      opacity:.96; animation: float var(--dur) cubic-bezier(.22,.7,.18,1) forwards }
+      opacity:.96; animation: float var(--dur) linear forwards }
     .heart{ font-size: var(--size); color:hsl(var(--h) 90% 62%);
       text-shadow: 0 0 8px hsl(var(--h) 90% 62% / .75), 0 0 18px hsl(var(--h) 90% 62% / .45), 0 6px 18px hsl(var(--h) 50% 30% / .35) }
     .word{ font-size: var(--size); font-weight:700; color: hsl(0 0% 100%);
@@ -30,106 +30,120 @@
     @keyframes float{
       to{ transform: translate(calc(-50% + var(--dx)), calc(-50% - var(--dy))) scale(var(--scaleEnd)) rotate(var(--rotEnd)); opacity:0 }
     }
-
-    .hud{ position:fixed; right:16px; top:16px; display:flex; gap:12px; align-items:center;
-      background:hsl(0 0% 100% / .14); backdrop-filter: blur(8px); border:1px solid hsl(0 0% 100% / .2);
-      padding:10px 12px; border-radius:16px; box-shadow: 0 10px 24px hsl(0 0% 0% / .2); color:white }
-    .hud label{font-size:14px; opacity:.9} .hud .sep{width:1px; height:20px; background:hsl(0 0% 100% / .25)}
-    .hud input[type="range"]{width:130px}
-    .btn{appearance:none; border:1px solid hsl(0 0% 100% / .25); background:hsl(0 0% 100% / .1); color:white; padding:8px 10px; border-radius:10px; cursor:pointer}
-    .btn:active{transform:translateY(1px)} .switch{display:inline-flex; align-items:center; gap:6px}
-
-    .brand{position:fixed; left:16px; bottom:16px; color:white; opacity:.85; font-weight:600; letter-spacing:.35px}
-    .hint{position:fixed; inset:0; display:grid; place-items:center; pointer-events:none}
-    .hint b{color:white; background:hsl(0 0% 100% / .12); border:1px solid hsl(0 0% 100% / .2); padding:8px 12px; border-radius:12px; backdrop-filter: blur(6px); animation:out 3s ease 1 forwards}
-    @keyframes out{70%{opacity:1}100%{opacity:0; transform:translateY(-8px)}}
   </style>
 </head>
 <body>
-  <div id="field" aria-hidden="true"></div>
+<audio id="bgm" autoplay loop muted>
+  <source src="Naif.mp3" type="audio/mpeg">
+</audio>
+<div id="field" aria-hidden="true"></div>
 
-  <div class="hud">
-    <label class="switch"><input id="auto" type="checkbox" checked><span>Auto</span></label>
-    <label class="switch"><input id="textOn" type="checkbox" checked><span>Teks</span></label>
-    <div class="sep"></div>
-    <label>Kecepatan <input id="rate" type="range" min="0" max="80" step="1" value="22"></label>
-    <div class="sep"></div>
-    <button id="burst" class="btn">Burst</button>
-    <button id="clear" class="btn">Clear</button>
-  </div>
+<script>
+  const field = document.getElementById('field');
 
-  <div class="brand">Klik / tahan & drag untuk love ❤ + kata-kata ✨</div>
-  <div class="hint"><b>Double‑click = fireworks + kata</b></div>
+  const TEXTS = [
+    // "From Nana Wartana",
+    // "I’ll try to make you believe in men again.",
+    // "Always be my favorite notification",
+    // "Kamu versi terbaik dari mimpiku",
+    // "Hmmmmm",
+    // "Hahahahahahahaha",
+    // "Apakah Semesta merestui kita😁",
+    // "To Salsabilla Lutfiah Rifdah",
+    // "Salbrut",
+    // "Caca Cantik",
+    // "Curug Muara Jaya Let's go?",
+    // "Sudah siap ngalahin aku funrun?",
+    // "Aku rajin cuci sepatu kok",
+    // "Aku mandi 2x sehari",
+    // "Dasternya minjem lagi, rabu main lagi, semoga kalah lagi", 
+    // "Aku orangnya gaje dan random kalo ke orang deket",
+    // "Musik nyala gak?",
+    "Terima kasih sudah tap"
+  ];
 
-  <script>
-    const field = document.getElementById('field');
-    const rateEl = document.getElementById('rate');
-    const autoEl = document.getElementById('auto');
-    const textEl = document.getElementById('textOn');
-    const burstBtn = document.getElementById('burst');
-    const clearBtn = document.getElementById('clear');
+  const RATE_HEART = 16;
+  const RATE_WORD  = 1;
 
-    const TEXTS = [
-      "From Nana Wartana",
-      "I'll try to change your mindset about a man",
-      "Always be my favorite notification",
-      "Kamu versi terbaik dari mimpiku",
-      "Terima kasih sudah hadir",
-      "Apakah Semesta merestui kita😁",
-      "Forever starts now",
-      "Salsabilla Luthfiah Rifdah",
-      "Salbrut",
-      "Caca Cantik",
-      "Curug Muara Jaya Let's go?"
-    ];
+  function rnd(a,b){return a + Math.random()*(b-a)}
+  function pick(arr){return arr[Math.floor(Math.random()*arr.length)]}
 
-    let autoTimer = null, autoTick = 0;
-
-    function rnd(a,b){return a + Math.random()*(b-a)}
-    function pick(arr){return arr[Math.floor(Math.random()*arr.length)]}
-
-    function spawnHeart(x, y, n=1){
-      for(let i=0;i<n;i++){
-        const el = document.createElement('span'); el.className = 'heart'; el.textContent = pick(['❤','💖','💗','💕','💘','❤️‍🔥']);
-        const size=rnd(14,42), dur=rnd(2.2,5.0), drift=rnd(-140,140)+'px', rise=rnd(70,110)+'vh', hue=rnd(330,360).toFixed(1), rotS=rnd(-18,18)+'deg', rotE=rnd(-45,45)+'deg', scS=(rnd(.85,1.25)).toFixed(2), scE=(rnd(1.1,1.6)).toFixed(2);
-        el.style.setProperty('--left', x+'px'); el.style.setProperty('--top', y+'px'); el.style.setProperty('--size', size+'px'); el.style.setProperty('--dur', dur+'s'); el.style.setProperty('--dx', drift); el.style.setProperty('--dy', rise); el.style.setProperty('--h', hue); el.style.setProperty('--rot', rotS); el.style.setProperty('--rotEnd', rotE); el.style.setProperty('--scale', scS); el.style.setProperty('--scaleEnd', scE);
-        el.addEventListener('animationend', ()=> el.remove()); field.appendChild(el);
-      }
+  function spawnHeart(x, y, n=1){
+    for(let i=0;i<n;i++){
+      const el = document.createElement('span'); 
+      el.className = 'heart'; 
+      el.textContent = pick(['❤','💖','💗','💕','💘','❤️‍🔥']);
+      const size=28, dur=4.8, drift= '0px', rise='90vh', hue=rnd(330,360).toFixed(1);
+      el.style.setProperty('--left', x+'px'); 
+      el.style.setProperty('--top', y+'px'); 
+      el.style.setProperty('--size', size+'px'); 
+      el.style.setProperty('--dur', dur+'s'); 
+      el.style.setProperty('--dx', drift); 
+      el.style.setProperty('--dy', rise); 
+      el.style.setProperty('--h', hue); 
+      el.style.setProperty('--rot', '0deg'); 
+      el.style.setProperty('--rotEnd', '0deg'); 
+      el.style.setProperty('--scale', '1'); 
+      el.style.setProperty('--scaleEnd', '1.18');
+      el.addEventListener('animationend', ()=> el.remove()); 
+      field.appendChild(el);
     }
+  }
 
-    function spawnWord(x, y, n=1){
-      for(let i=0;i<n;i++){
-        const el = document.createElement('span'); el.className = 'word'; el.textContent = pick(TEXTS);
-        const size=rnd(16,28), dur=rnd(2.6,5.6), drift=rnd(-120,120)+'px', rise=rnd(60,100)+'vh', rotS=rnd(-4,4)+'deg', rotE=rnd(-10,10)+'deg', scS=(rnd(.95,1.1)).toFixed(2), scE=(rnd(1.05,1.35)).toFixed(2);
-        el.style.setProperty('--left', x+'px'); el.style.setProperty('--top', y+'px'); el.style.setProperty('--size', size+'px'); el.style.setProperty('--dur', dur+'s'); el.style.setProperty('--dx', drift); el.style.setProperty('--dy', rise); el.style.setProperty('--rot', rotS); el.style.setProperty('--rotEnd', rotE); el.style.setProperty('--scale', scS); el.style.setProperty('--scaleEnd', scE);
-        el.addEventListener('animationend', ()=> el.remove()); field.appendChild(el);
-      }
+  function spawnWord(text, x, y){
+    const el = document.createElement('span'); 
+    el.className = 'word'; 
+    el.textContent = text;
+    const size=22, dur=5.2, drift='0px', rise='90vh';
+    el.style.setProperty('--left', x+'px'); 
+    el.style.setProperty('--top', y+'px'); 
+    el.style.setProperty('--size', size+'px'); 
+    el.style.setProperty('--dur', dur+'s'); 
+    el.style.setProperty('--dx', drift); 
+    el.style.setProperty('--dy', rise); 
+    el.style.setProperty('--rot', '0deg'); 
+    el.style.setProperty('--rotEnd', '0deg'); 
+    el.style.setProperty('--scale', '1'); 
+    el.style.setProperty('--scaleEnd', '1.08');
+    el.addEventListener('animationend', ()=> el.remove()); 
+    field.appendChild(el);
+  }
+
+  // hearts tetap jalan
+  setInterval(()=>{
+    const x=rnd(innerWidth*0.2, innerWidth*0.8), y=innerHeight-24; 
+    spawnHeart(x,y,1)
+  }, 1000/RATE_HEART);
+
+  // interval teks "Tap layar..."
+  let tapHint = setInterval(()=>{
+    spawnWord("Tap layar 1x caaaaaaa!!", innerWidth/2, innerHeight-44);
+  }, 2000); // muncul tiap 2 detik
+
+  let wordInterval = null; // nanti diaktifkan setelah tap
+
+  document.addEventListener("click", () => {
+    const audio = document.getElementById("bgm");
+    audio.muted = false;
+    audio.play();
+
+    // stop teks "tap layar"
+    clearInterval(tapHint);
+
+    // mulai interval teks random
+    if(!wordInterval){
+      wordInterval = setInterval(()=>{
+        const x=rnd(innerWidth*0.25, innerWidth*0.75), y=innerHeight-44; 
+        spawnWord(pick(TEXTS), x,y)
+      }, 1000/RATE_WORD);
     }
+  }, { once: true });
 
-    function autoStart(){
-      autoStop(); const r=+rateEl.value; if(!autoEl.checked||r<=0) return; const ms=1000/ r;
-      autoTimer = setInterval(()=>{
-        const x=rnd(innerWidth*0.15, innerWidth*0.85), y=innerHeight-22; spawnHeart(x,y,1);
-        autoTick++; if(textEl.checked && autoTick%6===0) spawnWord(x- rnd(-60,60), y-40, 1);
-      }, ms);
-    }
-    function autoStop(){ if(autoTimer){ clearInterval(autoTimer); autoTimer=null } }
-
-    rateEl.addEventListener('input', autoStart); autoEl.addEventListener('change', autoStart); textEl.addEventListener('change', autoStart);
-
-    burstBtn.addEventListener('click', ()=>{ const x=innerWidth/2, y=innerHeight*0.7; spawnHeart(x,y,28); if(textEl.checked) spawnWord(x,y-30,6) });
-    clearBtn.addEventListener('click', ()=>{ document.querySelectorAll('.heart,.word').forEach(n=>n.remove()) });
-
-    let drawing=false; function point(e){ return e.touches&&e.touches.length? {x:e.touches[0].clientX,y:e.touches[0].clientY}:{x:e.clientX,y:e.clientY} }
-    field.addEventListener('pointerdown', e=>{ drawing=true; const p=point(e); spawnHeart(p.x,p.y,6); if(textEl.checked) spawnWord(p.x,p.y-20,1) })
-    addEventListener('pointerup', ()=> drawing=false)
-    addEventListener('pointermove', e=>{ if(drawing){ const p=point(e); spawnHeart(p.x,p.y,2); if(textEl.checked && Math.random()<.15) spawnWord(p.x,p.y-18,1) } })
-
-    field.addEventListener('dblclick', e=>{ const p=point(e); spawnHeart(p.x,p.y,36); if(textEl.checked) spawnWord(p.x,p.y-24,8) })
-
-    addEventListener('mousemove', e=>{ document.body.style.setProperty('--mx', (e.clientX/window.innerWidth*100)+'%'); document.body.style.setProperty('--my', (e.clientY/window.innerHeight*100)+'%') });
-
-    autoStart();
-  </script>
+  // efek background ikut mouse
+  addEventListener('mousemove', e=>{
+    document.body.style.setProperty('--mx', (e.clientX/window.innerWidth*100)+'%'); 
+    document.body.style.setProperty('--my', (e.clientY/window.innerHeight*100)+'%') 
+  });
+</script>
 </body>
 </html>
