@@ -77,7 +77,7 @@
 -->
 <script>
   const field = document.getElementById('field');
-
+/*
   const TEXTS = [
     "From Nana Wartana",
     "I’ll try to make you believe in men again.",
@@ -159,12 +159,12 @@
   }, 2000); // muncul tiap 2 detik
 
   let wordInterval = null; // nanti diaktifkan setelah tap
-
+*/
   field.addEventListener("click", () => {
     const audio = document.getElementById("bgm");
     audio.muted = false;
     audio.play();
-
+/*
     // stop teks "tap layar"
     clearInterval(tapHint);
 
@@ -175,13 +175,15 @@
         spawnWord(pick(TEXTS), x,y)
       }, 1000/RATE_WORD);
     }
+    */
   }, { once: true });
-
+/*
   // efek background ikut mouse
   addEventListener('mousemove', e=>{
     document.body.style.setProperty('--mx', (e.clientX/window.innerWidth*100)+'%'); 
     document.body.style.setProperty('--my', (e.clientY/window.innerHeight*100)+'%') 
   });
+  */
 </script>
 </body>
 </html>
