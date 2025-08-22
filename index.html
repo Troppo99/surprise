@@ -1,190 +1,296 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Surprise</title>
+  <meta name="robots" content="noindex, nofollow">
   <style>
     :root{ --bg-a: 320 88% 54%; --bg-b: 255 88% 58% }
-    *{box-sizing:border-box} html,body{height:100%}
-    body{ margin:0; overflow:hidden; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; overflow:hidden;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
       background:
-        radial-gradient(1000px 1000px at var(--mx,50%) var(--my,50%), hsl(0 0% 100% / .06), transparent 60%),
+        radial-gradient(1000px 1000px at var(--mx,50%) var(--my,50%), hsl(0 0% 100%/.06), transparent 60%),
         linear-gradient(135deg, hsl(var(--bg-a)), hsl(var(--bg-b)));
-      animation:bg-pan 18s linear infinite }
+      animation:bg-pan 18s linear infinite;
+    }
     @keyframes bg-pan{0%{filter:hue-rotate(0)}100%{filter:hue-rotate(360deg)}}
 
-    #field{position:fixed; inset:0}
+    #field{ position:fixed; inset:0 }
 
     .heart, .word{
       position:absolute; left:var(--left); top:var(--top);
       transform: translate(-50%,-50%) scale(var(--scale)) rotate(var(--rot));
       line-height:1; user-select:none; pointer-events:none;
-      filter: drop-shadow(0 12px 24px hsl(0 0% 0% / .25));
-      opacity:.96; animation: float var(--dur) linear forwards }
-    .heart{ font-size: var(--size); color:hsl(var(--h) 90% 62%);
-      text-shadow: 0 0 8px hsl(var(--h) 90% 62% / .75), 0 0 18px hsl(var(--h) 90% 62% / .45), 0 6px 18px hsl(var(--h) 50% 30% / .35) }
-    .word{ font-size: var(--size); font-weight:700; color: hsl(0 0% 100%);
-      letter-spacing:.3px; text-shadow: 0 0 10px hsl(0 0% 100% / .7), 0 10px 30px hsl(0 0% 0% / .35) }
-
+      filter: drop-shadow(0 12px 24px hsl(0 0% 0%/.25));
+      opacity:.96; animation: float var(--dur) linear forwards;
+    }
+    .heart{
+      font-size: var(--size); color:hsl(var(--h) 90% 62%);
+      text-shadow:
+        0 0 8px hsl(var(--h) 90% 62%/.75),
+        0 0 18px hsl(var(--h) 90% 62%/.45),
+        0 6px 18px hsl(var(--h) 50% 30%/.35);
+    }
+    .word{
+      font-size: var(--size); font-weight:700; color:#fff; letter-spacing:.3px;
+      text-shadow: 0 0 10px hsl(0 0% 100%/.7), 0 10px 30px hsl(0 0% 0%/.35);
+    }
     @keyframes float{
       to{ transform: translate(calc(-50% + var(--dx)), calc(-50% - var(--dy))) scale(var(--scaleEnd)) rotate(var(--rotEnd)); opacity:0 }
     }
+
     .nav-container{
       position: fixed; top: 16px; right: 16px; z-index: 50;
-      display: flex; gap: 10px;
+      display: none; gap: 10px; /* aktifkan saat non-maintenance */
     }
     .nav-btn{
       padding: 10px 14px; border: 0; border-radius: 999px;
       font-weight: 700; letter-spacing:.2px; cursor: pointer;
       backdrop-filter: blur(6px);
-      background: hsl(0 0% 100% / .18); color: white;
-      box-shadow: 0 6px 20px hsl(0 0% 0% / .25);
-      text-decoration: none;
-      display: inline-block;
+      background: hsl(0 0% 100%/.18); color: white;
+      box-shadow: 0 6px 20px hsl(0 0% 0%/.25);
+      text-decoration: none; display: inline-block; text-align:center;
     }
-    .nav-btn:hover{ background:hsl(0 0% 100% /.28) }
+    .nav-btn:hover{ background:hsl(0 0% 100%/.28) }
 
-
-  .teks-pemeliharaan {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      font-family: Arial, sans-serif;
-      font-size: 20px;
-      }
+    .teks-pemeliharaan{
+      position: absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+      font-size:20px; color:#fff; text-align:center;
+      padding:10px 14px; border-radius:12px;
+      background: hsl(0 0% 0%/.25); backdrop-filter: blur(4px);
+      z-index:100; pointer-events:none;
+      display: block; /* default: terlihat, disembunyikan saat non-maintenance */
+    }
   </style>
 </head>
 <body>
-  <audio id="bgm" autoplay loop muted>
-  <source src="Reka.mp3" type="audio/mpeg">
-</audio>
-    <span class="teks-pemeliharaan">sedang pemeliharaan, server sedang galau🙂</span>
-  <!--
-<audio id="bgm" autoplay loop muted>
-  <source src="Naif.mp3" type="audio/mpeg">
-</audio>
-<div class="nav-container">
-  <a href="wedding-website/index.html" target="_blank" rel="noopener" class="nav-btn">
-    Wedding
-  </a>
-  <a href="https://nwr27.github.io/nanawartana" target="_blank" rel="noopener" class="nav-btn">
-    Portfolio
-  </a>
-</div>
--->
-<div id="field" aria-hidden="true"></div>
+  <!-- Satu elemen audio; src diatur via JS sesuai mode -->
+  <audio id="bgm" autoplay loop muted></audio>
 
-<script>
-  const field = document.getElementById('field');
-/*
-  const TEXTS = [
-    "From Nana Wartana",
-    "I’ll try to make you believe in men again.",
-    "Always be my favorite notification",
-    "Kamu versi terbaik dari mimpiku",
-    "Hmmmmm",
-    "Hahahahahahahaha",
-    "Apakah Semesta merestui kita😁",
-    "To Salsabilla Lutfiah Rifdah",
-    "Salbrut",
-    "Caca Cantik",
-    // "Curug Muara Jaya Let's go?",
-    // "Sudah siap ngalahin aku funrun?",
-    "Aku rajin cuci sepatu kok",
-    "Aku mandi 2x sehari",
-    "Dasternya aku cuci dulu ya", 
-    "Aku orangnya gaje dan random kalo ke orang deket",
-    "Happy Weekend",
-    "Aku mau buka jasa bikin web",
-    // "Terima kasih sudah tap"
-  ];
+  <!-- NAV: hanya tampil saat non-maintenance -->
+  <div class="nav-container" id="nav">
+    <a href="wedding-website/index.html" target="_blank" rel="noopener" class="nav-btn">Wedding</a>
+    <a href="https://nwr27.github.io/nanawartana" target="_blank" rel="noopener" class="nav-btn">Portfolio</a>
+  </div>
 
-  const RATE_HEART = 16;
-  const RATE_WORD  = 1;
+  <!-- Pesan maintenance: hanya tampil saat maintenance -->
+  <span class="teks-pemeliharaan" id="maintText">sedang pemeliharaan, server sedang galau🙂</span>
 
+  <div id="field" aria-hidden="true"></div>
+
+  <script>
+  // ===================== SAKLAR MODE =====================
+  const MAINTENANCE = true; // ← ubah ke false saat selesai maintenance
+
+  // ===================== UTIL =====================
   function rnd(a,b){return a + Math.random()*(b-a)}
   function pick(arr){return arr[Math.floor(Math.random()*arr.length)]}
 
+  const field = document.getElementById('field');
+  const nav   = document.getElementById('nav');
+  const maintText = document.getElementById('maintText');
+  const audio = document.getElementById('bgm');
+
+  // Komponen visual
   function spawnHeart(x, y, n=1){
     for(let i=0;i<n;i++){
-      const el = document.createElement('span'); 
-      el.className = 'heart'; 
+      const el = document.createElement('span');
+      el.className = 'heart';
       el.textContent = pick(['❤','💖','💗','💕','💘','❤️‍🔥']);
-      const size=28, dur=4.8, drift= '0px', rise='90vh', hue=rnd(330,360).toFixed(1);
-      el.style.setProperty('--left', x+'px'); 
-      el.style.setProperty('--top', y+'px'); 
-      el.style.setProperty('--size', size+'px'); 
-      el.style.setProperty('--dur', dur+'s'); 
-      el.style.setProperty('--dx', drift); 
-      el.style.setProperty('--dy', rise); 
-      el.style.setProperty('--h', hue); 
-      el.style.setProperty('--rot', '0deg'); 
-      el.style.setProperty('--rotEnd', '0deg'); 
-      el.style.setProperty('--scale', '1'); 
+      const size=28, dur=4.8, drift='0px', rise='90vh', hue=rnd(330,360).toFixed(1);
+      el.style.setProperty('--left', x+'px');
+      el.style.setProperty('--top', y+'px');
+      el.style.setProperty('--size', size+'px');
+      el.style.setProperty('--dur', dur+'s');
+      el.style.setProperty('--dx', drift);
+      el.style.setProperty('--dy', rise);
+      el.style.setProperty('--h', hue);
+      el.style.setProperty('--rot', '0deg');
+      el.style.setProperty('--rotEnd', '0deg');
+      el.style.setProperty('--scale', '1');
       el.style.setProperty('--scaleEnd', '1.18');
-      el.addEventListener('animationend', ()=> el.remove()); 
+      el.addEventListener('animationend', ()=> el.remove());
       field.appendChild(el);
     }
   }
-
   function spawnWord(text, x, y){
-    const el = document.createElement('span'); 
-    el.className = 'word'; 
+    const el = document.createElement('span');
+    el.className = 'word';
     el.textContent = text;
     const size=22, dur=5.2, drift='0px', rise='90vh';
-    el.style.setProperty('--left', x+'px'); 
-    el.style.setProperty('--top', y+'px'); 
-    el.style.setProperty('--size', size+'px'); 
-    el.style.setProperty('--dur', dur+'s'); 
-    el.style.setProperty('--dx', drift); 
-    el.style.setProperty('--dy', rise); 
-    el.style.setProperty('--rot', '0deg'); 
-    el.style.setProperty('--rotEnd', '0deg'); 
-    el.style.setProperty('--scale', '1'); 
+    el.style.setProperty('--left', x+'px');
+    el.style.setProperty('--top', y+'px');
+    el.style.setProperty('--size', size+'px');
+    el.style.setProperty('--dur', dur+'s');
+    el.style.setProperty('--dx', drift);
+    el.style.setProperty('--dy', rise);
+    el.style.setProperty('--rot', '0deg');
+    el.style.setProperty('--rotEnd', '0deg');
+    el.style.setProperty('--scale', '1');
     el.style.setProperty('--scaleEnd', '1.08');
-    el.addEventListener('animationend', ()=> el.remove()); 
+    el.addEventListener('animationend', ()=> el.remove());
     field.appendChild(el);
   }
 
-  // hearts tetap jalan
-  setInterval(()=>{
-    const x=rnd(innerWidth*0.2, innerWidth*0.8), y=innerHeight-24; 
-    spawnHeart(x,y,1)
-  }, 1000/RATE_HEART);
-
-  // interval teks "Tap layar..."
-  let tapHint = setInterval(()=>{
-    spawnWord("Tap layar 1x caaaaaaa!!", innerWidth/2, innerHeight-44);
-  }, 2000); // muncul tiap 2 detik
-
-  let wordInterval = null; // nanti diaktifkan setelah tap
-*/
-  field.addEventListener("click", () => {
-    const audio = document.getElementById("bgm");
-    audio.muted = false;
-    audio.play();
-/*
-    // stop teks "tap layar"
-    clearInterval(tapHint);
-
-    // mulai interval teks random
-    if(!wordInterval){
-      wordInterval = setInterval(()=>{
-        const x=rnd(innerWidth*0.25, innerWidth*0.75), y=innerHeight-44; 
-        spawnWord(pick(TEXTS), x,y)
-      }, 1000/RATE_WORD);
-    }
-    */
-  }, { once: true });
-/*
-  // efek background ikut mouse
+  // Efek background ikut mouse (kedua mode)
   addEventListener('mousemove', e=>{
-    document.body.style.setProperty('--mx', (e.clientX/window.innerWidth*100)+'%'); 
-    document.body.style.setProperty('--my', (e.clientY/window.innerHeight*100)+'%') 
+    document.body.style.setProperty('--mx', (e.clientX/window.innerWidth*100)+'%');
+    document.body.style.setProperty('--my', (e.clientY/window.innerHeight*100)+'%');
   });
-  */
-</script>
+
+  // ===================== MODE: MAINTENANCE =====================
+  if (MAINTENANCE) {
+    maintText.style.display = 'block';
+    nav.style.display = 'none';
+    audio.src = 'Reka.mp3';
+
+    const GALAU = [
+  "Aku cemburu wkwk", 
+  "tapi hubungan kita belum pasti",
+  "itu bikin aku bingung.",
+  "Aku juga bingung bagaimana harus memastikan",
+  "kadang sinyal darimu terasa oke, kadang tidak."
+];
+
+
+    // Loop teks galau setelah klik; rAF agar tidak "burst"
+    const INTERVAL_MS = 1400;
+    let started = false, running = true;
+    let idx = 0, lastTime = performance.now(), acc = 0;
+
+    field.addEventListener('click', () => {
+      if (started) return;
+      audio.muted = false;
+      audio.play().catch(()=>{});
+      started = true;
+    }, { once: true });
+
+    function loopMaint(now){
+      if (!running || !started){
+        lastTime = now;
+        requestAnimationFrame(loopMaint);
+        return;
+      }
+      const dt = now - lastTime; // ms
+      lastTime = now;
+
+      acc += dt;
+      while (acc >= INTERVAL_MS){
+        spawnWord(GALAU[idx], innerWidth/2, innerHeight - 44);
+        idx = (idx + 1) % GALAU.length; // looping
+        acc -= INTERVAL_MS;
+      }
+      requestAnimationFrame(loopMaint);
+    }
+    requestAnimationFrame(loopMaint);
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden){
+        running = false;
+        acc = 0;
+      } else {
+        running = true;
+        lastTime = performance.now();
+      }
+    });
+
+    // (Sengaja tidak menyalakan hearts/anim lain saat maintenance)
+
+  } else {
+    // ===================== MODE: NORMAL =====================
+    maintText.style.display = 'none';
+    nav.style.display = 'flex';
+    audio.src = 'Naif.mp3';
+
+    const TEXTS = [
+      "From Nana Wartana",
+      "I’ll try to make you believe in men again.",
+      "Always be my favorite notification",
+      "Kamu versi terbaik dari mimpiku",
+      "Hmmmmm",
+      "Hahahahahahahaha",
+      "Apakah Semesta merestui kita😁",
+      "To Salsabilla Lutfiah Rifdah",
+      "Salbrut",
+      "Caca Cantik",
+      "Curug Muara Jaya Let's go?",
+      "Sudah siap ngalahin aku funrun?",
+      "Aku rajin cuci sepatu kok",
+      "Aku mandi 2x sehari",
+      "Dasternya minjem lagi, rabu main lagi, semoga kalah lagi",
+      "Aku orangnya gaje dan random kalo ke orang deket",
+      "Musik nyala gak?"
+    ];
+
+    const HEARTS_PER_SEC = 16;
+    const WORDS_PER_SEC  = 1;
+    const TAP_HINT_EVERY = 2000; // ms
+
+    let hasStarted = false, running = true;
+    let accHeart = 0, accWord = 0, lastTime = performance.now();
+    let hintTimer = 0;
+
+    // Start hanya jika klik di area field (tombol nav tidak memicu)
+    field.addEventListener('click', () => {
+      if (hasStarted) return;
+      audio.muted = false;
+      audio.play().catch(()=>{});
+      hasStarted = true;
+    }, { once: true });
+
+    function loopNormal(now){
+      if (!running){
+        lastTime = now;
+        requestAnimationFrame(loopNormal);
+        return;
+      }
+      const dt = Math.min(0.05, (now - lastTime)/1000); // detik
+      lastTime = now;
+
+      // Hearts selalu spawn
+      accHeart += dt * HEARTS_PER_SEC;
+      while (accHeart >= 1){
+        const x = rnd(innerWidth*0.2, innerWidth*0.8), y = innerHeight - 24;
+        spawnHeart(x, y, 1);
+        accHeart -= 1;
+      }
+
+      // Hint sebelum start
+      if (!hasStarted){
+        hintTimer += dt * 1000;
+        if (hintTimer >= TAP_HINT_EVERY){
+          spawnWord("Tap layar 1x caaaaaaa!!", innerWidth/2, innerHeight-44);
+          hintTimer = 0;
+        }
+      }
+
+      // Kata random setelah start
+      if (hasStarted){
+        accWord += dt * WORDS_PER_SEC;
+        while (accWord >= 1){
+          const x = rnd(innerWidth*0.25, innerWidth*0.75), y = innerHeight - 44;
+          spawnWord(pick(TEXTS), x, y);
+          accWord -= 1;
+        }
+      }
+      requestAnimationFrame(loopNormal);
+    }
+    requestAnimationFrame(loopNormal);
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden){
+        running = false;
+        accHeart = 0; accWord = 0; hintTimer = 0;
+      } else {
+        running = true;
+        lastTime = performance.now();
+      }
+    });
+  }
+  </script>
 </body>
 </html>
