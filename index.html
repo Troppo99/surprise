@@ -101,7 +101,7 @@
       const el = document.createElement('span');
       el.className = 'heart';
       //el.textContent = pick(['❤','💖','💗','💕','💘','❤️‍🔥']);
-      el.textContent = pick(['🫠','🫤','☹️','🙂‍↔️','🙁','🥺']);
+      el.textContent = pick(['🫠','🫤','☹️','🙂‍↔️','🙁','🥺, ❤️‍🔥']);
       const size=28, dur=4.8, drift='0px', rise='90vh', hue=rnd(330,360).toFixed(1);
       el.style.setProperty('--left', x+'px');
       el.style.setProperty('--top', y+'px');
@@ -147,8 +147,8 @@
   if (MAINTENANCE) {
     maintText.style.display = 'block';
     nav.style.display = 'none';
-    audio.src = 'Reka.mp3';
-
+    //audio.src = 'Reka.mp3';
+    audio.src = 'monolog.mp3';
     const GALAU = [
   "Aku cemburu wkwk", 
   "tapi hubungan kita belum pasti",
@@ -240,7 +240,9 @@
       //"143",
       "Mencoba mengurangi obsesi",
       "Mengejar terus tapi gaada usaha balik emang bener cape ya:(",
-      
+      "Ca kalo aku mulai buat kamu risih, bilang aja",
+      "Aku sadar diri",
+      "Aku kek gaguna kalo kamu cemberut mulu:(",
     ];
 
     const HEARTS_PER_SEC = 16;
