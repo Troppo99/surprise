@@ -111,11 +111,13 @@
       field.appendChild(el);
     }
   }
-  function spawnWord(text, x, y){
+
+  // ➜ spawnWord kini bisa diatur durasi & ukuran (opsional)
+  function spawnWord(text, x, y, opts={}){
+    const { dur=5.2, size=22, drift='0px', rise='90vh' } = opts;
     const el = document.createElement('span');
     el.className = 'word';
     el.textContent = text;
-    const size=22, dur=5.2, drift='0px', rise='90vh';
     el.style.setProperty('--left', x+'px');
     el.style.setProperty('--top', y+'px');
     el.style.setProperty('--size', size+'px');
@@ -139,15 +141,16 @@
     maintText.style.display = 'block';
     nav.style.display = 'none';
     audio.src = 'tbdw.mp3';
+
     const GALAU = [
-      "aku lagi capek dan sakit hati sama kamu ca",
+      "aku lagi capek dan sakit hati sama perasaan ini",
       "kamu bilang belum percaya cowok karena masa lalu",
       "aku bilang akan berjuang agar kamu bisa percaya cowo lagi termasuk aku",
-      "kita beda pendidikan",
+      "kata kamu kita beda pendidikan",
       "respon ku aku nerima kamu apa adanya",
       "aku capek pas kamu jutek di chat atau ngobrol",
       "di saat yang sama kamu akrab sama cowok lain di depan aku",
-      "aku liat kamu dm-an di ig sama cowok lain sambil pap noer** (sekilas liat)",
+      "aku liat kamu dm-an di ig sama cowok lain (noe***) sambil pap",
       "di saat yang sama dm ku jarang banget di read",
       "aku bingung kamu trauma, minder atau sebenernya ga suka sama aku",
       "kamu pernah kasih foto ke aku itu yang bikin sakit hatinya, kok bisa",
@@ -157,15 +160,30 @@
       "foto berdua sekedar biar aku seneng aja ya hehe",
     ];
 
-    const INTERVAL_MS = 4000;
+    // ➜ Jeda antar-teks diperlama (8 detik)
+    const INTERVAL_MS = 8000;
+
     let started = false, running = true;
     let idx = 0, lastTime = performance.now(), acc = 0;
 
+    // ➜ Tap pertama: musik ON & teks pertama langsung muncul
     field.addEventListener('click', () => {
       if (started) return;
+      started = true;
+
+      // sembunyikan banner agar tidak nutup teks
+      maintText.style.display = 'none';
+
       audio.muted = false;
       audio.play().catch(()=>{});
-      started = true;
+
+      // tampilkan teks pertama segera dengan durasi animasi lebih lama
+      spawnWord(GALAU[idx], innerWidth/2, innerHeight - 44, { dur: 8.0 });
+      idx = (idx + 1) % GALAU.length;
+
+      // reset accumulator supaya hitungan jeda rapi setelah teks pertama
+      acc = 0;
+      lastTime = performance.now();
     }, { once: true });
 
     function loopMaint(now){
@@ -177,8 +195,10 @@
       const dt = now - lastTime;
       lastTime = now;
       acc += dt;
+
       while (acc >= INTERVAL_MS){
-        spawnWord(GALAU[idx], innerWidth/2, innerHeight - 44);
+        // ➜ Teks berikutnya juga pakai durasi lebih lama
+        spawnWord(GALAU[idx], innerWidth/2, innerHeight - 44, { dur: 8.0 });
         idx = (idx + 1) % GALAU.length;
         acc -= INTERVAL_MS;
       }
@@ -238,9 +258,9 @@
 
     field.addEventListener('click', () => {
       if (hasStarted) return;
+      hasStarted = true;
       audio.muted = false;
       audio.play().catch(()=>{});
-      hasStarted = true;
     }, { once: true });
 
     function loopNormal(now){
