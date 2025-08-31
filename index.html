@@ -45,7 +45,7 @@
 
     .nav-container{
       position: fixed; top: 16px; right: 16px; z-index: 50;
-      display: none; gap: 10px; /* aktifkan saat non-maintenance */
+      display: none; gap: 10px;
     }
     .nav-btn{
       padding: 10px 14px; border: 0; border-radius: 999px;
@@ -63,30 +63,25 @@
       padding:10px 14px; border-radius:12px;
       background: hsl(0 0% 0%/.25); backdrop-filter: blur(4px);
       z-index:100; pointer-events:none;
-      display: block; /* default: terlihat, disembunyikan saat non-maintenance */
+      display: block;
     }
   </style>
 </head>
 <body>
-  <!-- Satu elemen audio; src diatur via JS sesuai mode -->
   <audio id="bgm" autoplay loop muted></audio>
 
-  <!-- NAV: hanya tampil saat non-maintenance -->
   <div class="nav-container" id="nav">
     <a href="wedding-website/index.html" target="_blank" rel="noopener" class="nav-btn">Wedding</a>
     <a href="https://nwr27.github.io/nanawartana" target="_blank" rel="noopener" class="nav-btn">Portfolio</a>
   </div>
 
-  <!-- Pesan maintenance: hanya tampil saat maintenance -->
-  <span class="teks-pemeliharaan" id="maintText">sedang pemeliharaan, server sedang galau🙂</span>
+  <span class="teks-pemeliharaan" id="maintText">sedang pemeliharaan, server sedang galau🙂 (tap 1x)</span>
 
   <div id="field" aria-hidden="true"></div>
 
   <script>
-  // ===================== SAKLAR MODE =====================
-  const MAINTENANCE = false; // ← ubah ke false saat selesai maintenance
+  const MAINTENANCE = true;
 
-  // ===================== UTIL =====================
   function rnd(a,b){return a + Math.random()*(b-a)}
   function pick(arr){return arr[Math.floor(Math.random()*arr.length)]}
 
@@ -95,13 +90,11 @@
   const maintText = document.getElementById('maintText');
   const audio = document.getElementById('bgm');
 
-  // Komponen visual
   function spawnHeart(x, y, n=1){
     for(let i=0;i<n;i++){
       const el = document.createElement('span');
       el.className = 'heart';
-      //el.textContent = pick(['❤','💖','💗','💕','💘','❤️‍🔥']);
-      el.textContent = pick(['🫠','🫤','☹️','🙂‍↔️','🙁','🥺, ❤️‍🔥']);
+      el.textContent = pick(['🫠','🫤','☹️','🙁','🥺','❤️‍🔥']);
       const size=28, dur=4.8, drift='0px', rise='90vh', hue=rnd(330,360).toFixed(1);
       el.style.setProperty('--left', x+'px');
       el.style.setProperty('--top', y+'px');
@@ -137,40 +130,34 @@
     field.appendChild(el);
   }
 
-  // Efek background ikut mouse (kedua mode)
   addEventListener('mousemove', e=>{
     document.body.style.setProperty('--mx', (e.clientX/window.innerWidth*100)+'%');
     document.body.style.setProperty('--my', (e.clientY/window.innerHeight*100)+'%');
   });
 
-  // ===================== MODE: MAINTENANCE =====================
   if (MAINTENANCE) {
     maintText.style.display = 'block';
     nav.style.display = 'none';
-    audio.src = 'Reka.mp3';
+    audio.src = 'tbdw.mp3';
     const GALAU = [
-  "Aku cemburu wkwk", 
-  "tapi hubungan kita belum pasti",
-  "itu bikin aku bingung.",
-  "Aku juga bingung bagaimana harus memastikan",
-  "kadang sinyal darimu terasa oke, kadang tidak.",
-  "Happy weekend, ca:)",
-  "Pikiranku aneh aneh ca",
-  "Maaf",
-  "Aku selalu perhatiin kamu di sw atau di tempat kerja",
-  "Nahaaaaa aku cemburuuuu anjirrla",
-  "Aku langsung inget poto dipecel teh",
-  "Berarti dipotokeun si godeg",
-  "Ahhhhhh, semangattt Natan",
-  "Fuck my mind",
-  "Apa kamu ngasih foto ke yang lain juga😭",
-  "Oversharing kamu selalu buat overthinking",
-  "Tapi kalo gak oversharing kayakkk jadi nutupin😭"  
-];
+      "aku lagi capek dan sakit hati sama kamu ca",
+      "kamu bilang belum percaya cowok karena masa lalu",
+      "aku bilang akan berjuang agar kamu bisa percaya cowo lagi termasuk aku",
+      "kita beda pendidikan",
+      "respon ku aku nerima kamu apa adanya",
+      "aku capek pas kamu jutek di chat atau ngobrol",
+      "di saat yang sama kamu akrab sama cowok lain di depan aku",
+      "aku liat kamu dm-an di ig sama cowok lain sambil pap noer** (sekilas liat)",
+      "di saat yang sama dm ku jarang banget di read",
+      "aku bingung kamu trauma, minder atau sebenernya ga suka sama aku",
+      "kamu pernah kasih foto ke aku itu yang bikin sakit hatinya, kok bisa",
+      "bilang aja kalau kamu risih, dih najis, apaan sih, atau ga suka sekalian",
+      "biar aku gak berharap lagi",
+      "tujuan ku di sore",
+      "foto berdua sekedar biar aku seneng aja ya hehe",
+    ];
 
-
-    // Loop teks galau setelah klik; rAF agar tidak "burst"
-    const INTERVAL_MS = 2000;
+    const INTERVAL_MS = 4000;
     let started = false, running = true;
     let idx = 0, lastTime = performance.now(), acc = 0;
 
@@ -187,13 +174,12 @@
         requestAnimationFrame(loopMaint);
         return;
       }
-      const dt = now - lastTime; // ms
+      const dt = now - lastTime;
       lastTime = now;
-
       acc += dt;
       while (acc >= INTERVAL_MS){
         spawnWord(GALAU[idx], innerWidth/2, innerHeight - 44);
-        idx = (idx + 1) % GALAU.length; // looping
+        idx = (idx + 1) % GALAU.length;
         acc -= INTERVAL_MS;
       }
       requestAnimationFrame(loopMaint);
@@ -210,37 +196,33 @@
       }
     });
 
-    // (Sengaja tidak menyalakan hearts/anim lain saat maintenance)
-
   } else {
-    // ===================== MODE: NORMAL =====================
     maintText.style.display = 'none';
     nav.style.display = 'flex';
-    //audio.src = 'Naif.mp3';
     audio.src = 'monolog.mp3';
 
     const TEXTS = [
       "From Nana Wartana",
-      //"I’ll try to make you believe in men again.",
-      //"Always be my favorite notification",
-      //"Kamu versi terbaik dari mimpiku",
+      "I’ll try to make you believe in men again",
+      "Always be my favorite notification",
+      "Kamu versi terbaik dari mimpiku",
       "Hmmmmm",
       "Hahahahahahahaha",
-      //"Apakah Semesta merestui kita😁",
+      "Apakah Semesta merestui kita😁",
       "To Salsabilla Lutfiah Rifdah",
-      //"Salbrut",
-      //"Caca Cantik",
-      //"Curug Muara Jaya Let's go?",
+      "Salbrut",
+      "Caca Cantik",
+      "Curug Muara Jaya Let's go?",
       "Sudah siap ngalahin aku funrun?",
       "Aku rajin cuci sepatu kok",
       "Aku mandi 2x sehari",
-      //"Dasternya minjem lagi, rabu main lagi, semoga kalah lagi",
-      //"Aku orangnya gaje dan random kalo ke orang deket",
-      //"Musik nyala gak?"
-      //"143",
+      "Dasternya minjem lagi, rabu main lagi, semoga kalah lagi",
+      "Aku orangnya gaje dan random kalo ke orang deket",
+      "Musik nyala gak?",
+      "143",
       "Mencoba mengurangi obsesi",
       "Mengejar terus tapi gaada usaha balik emang bener cape ya:(",
-      "Ca kalo aku mulai buat kamu risih, bilang aja",
+      "Ca kalo aku mulai buat kamu risih bilang aja",
       "Aku sadar diri",
       "Aku kek gaguna kalo kamu cemberut mulu:(",
       "Aku masih mencoba agar kamu percaya cowo dan aku"
@@ -248,13 +230,12 @@
 
     const HEARTS_PER_SEC = 16;
     const WORDS_PER_SEC  = 1;
-    const TAP_HINT_EVERY = 2000; // ms
+    const TAP_HINT_EVERY = 2000;
 
     let hasStarted = false, running = true;
     let accHeart = 0, accWord = 0, lastTime = performance.now();
     let hintTimer = 0;
 
-    // Start hanya jika klik di area field (tombol nav tidak memicu)
     field.addEventListener('click', () => {
       if (hasStarted) return;
       audio.muted = false;
@@ -268,10 +249,9 @@
         requestAnimationFrame(loopNormal);
         return;
       }
-      const dt = Math.min(0.05, (now - lastTime)/1000); // detik
+      const dt = Math.min(0.05, (now - lastTime)/1000);
       lastTime = now;
 
-      // Hearts selalu spawn
       accHeart += dt * HEARTS_PER_SEC;
       while (accHeart >= 1){
         const x = rnd(innerWidth*0.2, innerWidth*0.8), y = innerHeight - 24;
@@ -279,7 +259,6 @@
         accHeart -= 1;
       }
 
-      // Hint sebelum start
       if (!hasStarted){
         hintTimer += dt * 1000;
         if (hintTimer >= TAP_HINT_EVERY){
@@ -288,7 +267,6 @@
         }
       }
 
-      // Kata random setelah start
       if (hasStarted){
         accWord += dt * WORDS_PER_SEC;
         while (accWord >= 1){
