@@ -1,314 +1,590 @@
 <!DOCTYPE html>
 <html lang="id">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Surprise</title>
-  <meta name="robots" content="noindex, nofollow">
-  <style>
-    :root{ --bg-a: 320 88% 54%; --bg-b: 255 88% 58% }
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0; overflow:hidden;
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
-      background:
-        radial-gradient(1000px 1000px at var(--mx,50%) var(--my,50%), hsl(0 0% 100%/.06), transparent 60%),
-        linear-gradient(135deg, hsl(var(--bg-a)), hsl(var(--bg-b)));
-      animation:bg-pan 18s linear infinite;
-    }
-    @keyframes bg-pan{0%{filter:hue-rotate(0)}100%{filter:hue-rotate(360deg)}}
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Surprise</title>
+    <meta name="robots" content="noindex, nofollow" />
+    <style>
+      :root {
+        --bg-a: 320 88% 54%;
+        --bg-b: 255 88% 58%;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+      }
+      body {
+        margin: 0;
+        overflow: hidden;
+        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto,
+          "Helvetica Neue", Arial;
+        /* HAPUS filter di body agar anak2 (overlay) tidak kena hue-rotate */
+        background: #000; /* fallback */
+      }
 
-    #field{ position:fixed; inset:0 }
+      /* === Layer background terpisah agar filter hanya ke BG, bukan ke konten === */
+      #bg {
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        pointer-events: none;
+        background: radial-gradient(
+            1000px 1000px at var(--mx, 50%) var(--my, 50%),
+            hsl(0 0% 100%/0.06),
+            transparent 60%
+          ),
+          linear-gradient(135deg, hsl(var(--bg-a)), hsl(var(--bg-b)));
+        animation: bg-pan 18s linear infinite;
+      }
+      @keyframes bg-pan {
+        0% {
+          filter: hue-rotate(0);
+        }
+        100% {
+          filter: hue-rotate(360deg);
+        }
+      }
 
-    .heart, .word{
-      position:absolute; left:var(--left); top:var(--top);
-      transform: translate(-50%,-50%) scale(var(--scale)) rotate(var(--rot));
-      line-height:1; user-select:none; pointer-events:none;
-      filter: drop-shadow(0 12px 24px hsl(0 0% 0%/.25));
-      opacity:.96; animation: float var(--dur) linear forwards;
-    }
-    .heart{
-      font-size: var(--size); color:hsl(var(--h) 90% 62%);
-      text-shadow:
-        0 0 8px hsl(var(--h) 90% 62%/.75),
-        0 0 18px hsl(var(--h) 90% 62%/.45),
-        0 6px 18px hsl(var(--h) 50% 30%/.35);
-    }
-    .word{
-      font-size: var(--size); font-weight:700; color:#fff; letter-spacing:.3px;
-      text-shadow: 0 0 10px hsl(0 0% 100%/.7), 0 10px 30px hsl(0 0% 0%/.35);
-    }
-    @keyframes float{
-      to{ transform: translate(calc(-50% + var(--dx)), calc(-50% - var(--dy))) scale(var(--scaleEnd)) rotate(var(--rotEnd)); opacity:0 }
-    }
+      /* Semua konten lain di atas BG */
+      #app {
+        position: relative;
+        z-index: 1;
+      }
 
-    .nav-container{
-      position: fixed; top: 16px; right: 16px; z-index: 50;
-      display: none; gap: 10px;
-    }
-    .nav-btn{
-      padding: 10px 14px; border: 0; border-radius: 999px;
-      font-weight: 700; letter-spacing:.2px; cursor: pointer;
-      backdrop-filter: blur(6px);
-      background: hsl(0 0% 100%/.18); color: white;
-      box-shadow: 0 6px 20px hsl(0 0% 0%/.25);
-      text-decoration: none; display: inline-block; text-align:center;
-    }
-    .nav-btn:hover{ background:hsl(0 0% 100%/.28) }
+      #field {
+        position: fixed;
+        inset: 0;
+      }
 
-    .teks-pemeliharaan{
-      position: absolute; top:50%; left:50%; transform:translate(-50%,-50%);
-      font-size:20px; color:#fff; text-align:center;
-      padding:10px 14px; border-radius:12px;
-      background: hsl(0 0% 0%/.25); backdrop-filter: blur(4px);
-      z-index:100; pointer-events:none;
-      display: block;
-    }
-  </style>
-</head>
-<body>
-  <audio id="bgm" autoplay loop muted></audio>
+      .heart,
+      .word {
+        position: absolute;
+        left: var(--left);
+        top: var(--top);
+        transform: translate(-50%, -50%) scale(var(--scale)) rotate(var(--rot));
+        line-height: 1;
+        user-select: none;
+        pointer-events: none;
+        filter: drop-shadow(0 12px 24px hsl(0 0% 0%/0.25));
+        opacity: 0.96;
+        animation: float var(--dur) linear forwards;
+      }
+      .heart {
+        font-size: var(--size);
+        color: hsl(var(--h) 90% 62%);
+        text-shadow: 0 0 8px hsl(var(--h) 90% 62%/0.75),
+          0 0 18px hsl(var(--h) 90% 62%/0.45),
+          0 6px 18px hsl(var(--h) 50% 30%/0.35);
+      }
+      .word {
+        font-size: var(--size);
+        font-weight: 700;
+        color: #fff;
+        letter-spacing: 0.3px;
+        text-shadow: 0 0 10px hsl(0 0% 100%/0.7), 0 10px 30px hsl(0 0% 0%/0.35);
+      }
+      @keyframes float {
+        to {
+          transform: translate(calc(-50% + var(--dx)), calc(-50% - var(--dy)))
+            scale(var(--scaleEnd)) rotate(var(--rotEnd));
+          opacity: 0;
+        }
+      }
 
-  <div class="nav-container" id="nav">
-    <a href="wedding-website/index.html" target="_blank" rel="noopener" class="nav-btn">Wedding</a>
-    <a href="https://nwr27.github.io/nanawartana" target="_blank" rel="noopener" class="nav-btn">Portfolio</a>
-  </div>
+      .nav-container {
+        position: fixed;
+        top: 16px;
+        right: 16px;
+        z-index: 50;
+        display: none;
+        gap: 10px;
+      }
+      .nav-btn {
+        padding: 10px 14px;
+        border: 0;
+        border-radius: 999px;
+        font-weight: 700;
+        letter-spacing: 0.2px;
+        cursor: pointer;
+        backdrop-filter: blur(6px);
+        background: hsl(0 0% 100%/0.18);
+        color: white;
+        box-shadow: 0 6px 20px hsl(0 0% 0%/0.25);
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+      }
+      .nav-btn:hover {
+        background: hsl(0 0% 100%/0.28);
+      }
 
-  <span class="teks-pemeliharaan" id="maintText">sedang pemeliharaan, server sedang galau🙂 (tap 1x)</span>
+      .teks-pemeliharaan {
+        position: fixed; /* sebelumnya absolute */
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 20px;
+        color: #fff;
+        text-align: center;
+        padding: 10px 14px;
+        border-radius: 12px;
+        background: hsl(0 0% 0%/0.25);
+        backdrop-filter: blur(4px);
+        z-index: 100;
+        pointer-events: none;
+        display: block;
+      }
 
-  <div id="field" aria-hidden="true"></div>
+      /* === Overlay gambar (urutan 5 gambar) === */
+      .image-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 300;
+        display: grid;
+        place-items: center;
+        background: #fff; /* selalu putih */
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.35s ease, visibility 0.35s ease;
+        pointer-events: none; /* non-aktif saat hidden */
+      }
+      .image-overlay.show {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto; /* aktif saat tampil */
+      }
+      .image-overlay img {
+        /* Pusat, jaga rasio, tidak melebihi resolusi asli */
+        max-width: 100vw; /* jangan lebih lebar dari device */
+        height: auto; /* tinggi mengikuti rasio */
+        width: auto; /* gunakan ukuran asli jika lebih kecil dari viewport */
+        display: block;
+        /* Pastikan tidak kena filter dari BG karena berada di atas dan z-index berbeda */
+        filter: none;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Layer BG terpisah -->
+    <div id="bg" aria-hidden="true"></div>
 
-  <script>
-  const MAINTENANCE = true;
+    <!-- Semua konten di sini -->
+    <div id="app">
+      <audio id="bgm" autoplay loop muted></audio>
+      <audio id="bgm" autoplay loop muted></audio>
+      <audio id="oneShot"></audio>
 
-  function rnd(a,b){return a + Math.random()*(b-a)}
-  function pick(arr){return arr[Math.floor(Math.random()*arr.length)]}
+      <div class="nav-container" id="nav">
+        <a
+          href="wedding-website/index.html"
+          target="_blank"
+          rel="noopener"
+          class="nav-btn"
+          >Wedding</a
+        >
+        <a
+          href="https://nwr27.github.io/nanawartana"
+          target="_blank"
+          rel="noopener"
+          class="nav-btn"
+          >Portfolio</a
+        >
+      </div>
 
-  const field = document.getElementById('field');
-  const nav   = document.getElementById('nav');
-  const maintText = document.getElementById('maintText');
-  const audio = document.getElementById('bgm');
+      <span class="teks-pemeliharaan" id="maintText"
+        >sedang pemeliharaan, server sedang galau🙂 (tap 1x)</span
+      >
 
-  function spawnHeart(x, y, n=1){
-    for(let i=0;i<n;i++){
-      const el = document.createElement('span');
-      el.className = 'heart';
-      el.textContent = pick(['🫠','🫤','☹️','🙁','🥺','❤️‍🔥']);
-      const size=28, dur=4.8, drift='0px', rise='90vh', hue=rnd(330,360).toFixed(1);
-      el.style.setProperty('--left', x+'px');
-      el.style.setProperty('--top', y+'px');
-      el.style.setProperty('--size', size+'px');
-      el.style.setProperty('--dur', dur+'s');
-      el.style.setProperty('--dx', drift);
-      el.style.setProperty('--dy', rise);
-      el.style.setProperty('--h', hue);
-      el.style.setProperty('--rot', '0deg');
-      el.style.setProperty('--rotEnd', '0deg');
-      el.style.setProperty('--scale', '1');
-      el.style.setProperty('--scaleEnd', '1.18');
-      el.addEventListener('animationend', ()=> el.remove());
-      field.appendChild(el);
-    }
-  }
+      <div id="field" aria-hidden="true"></div>
 
-  // ➜ spawnWord kini bisa diatur durasi & ukuran (opsional)
-  function spawnWord(text, x, y, opts={}){
-    const { dur=5.2, size=22, drift='0px', rise='90vh' } = opts;
-    const el = document.createElement('span');
-    el.className = 'word';
-    el.textContent = text;
-    el.style.setProperty('--left', x+'px');
-    el.style.setProperty('--top', y+'px');
-    el.style.setProperty('--size', size+'px');
-    el.style.setProperty('--dur', dur+'s');
-    el.style.setProperty('--dx', drift);
-    el.style.setProperty('--dy', rise);
-    el.style.setProperty('--rot', '0deg');
-    el.style.setProperty('--rotEnd', '0deg');
-    el.style.setProperty('--scale', '1');
-    el.style.setProperty('--scaleEnd', '1.08');
-    el.addEventListener('animationend', ()=> el.remove());
-    field.appendChild(el);
-  }
+      <!-- Overlay gambar untuk urutan 5 tap pertama -->
+      <div id="imgOverlay" class="image-overlay" aria-hidden="true">
+        <img src="image1.jpg" alt="image" id="overlayImg" />
+      </div>
+    </div>
 
-  addEventListener('mousemove', e=>{
-    document.body.style.setProperty('--mx', (e.clientX/window.innerWidth*100)+'%');
-    document.body.style.setProperty('--my', (e.clientY/window.innerHeight*100)+'%');
-  });
+    <script>
+      const MAINTENANCE = true;
 
-  if (MAINTENANCE) {
-    maintText.style.display = 'block';
-    nav.style.display = 'none';
-    audio.src = 'tbdw.mp3';
+      function rnd(a, b) {
+        return a + Math.random() * (b - a);
+      }
+      function pick(arr) {
+        return arr[Math.floor(Math.random() * arr.length)];
+      }
 
-    const GALAU = [
-      "aku lagi capek dan sakit hati sama perasaan ini",
-      "kamu bilang belum percaya cowok karena masa lalu",
-      "aku bilang akan berjuang agar kamu bisa percaya cowo lagi termasuk aku",
-      "kata kamu kita beda pendidikan",
-      "respon ku aku nerima kamu apa adanya",
-      "aku capek pas kamu jutek di chat atau ngobrol",
-      "di saat yang sama kamu akrab sama cowok lain di depan aku",
-      "aku liat kamu dm-an di ig sama cowok lain (noe***) sambil pap",
-      "di saat yang sama dm ku jarang banget di read",
-      "aku bingung kamu trauma, minder atau sebenernya ga suka sama aku",
-      "kamu pernah kasih foto ke aku itu yang bikin sakit hatinya, kok bisa",
-      "bilang aja kalau kamu risih, dih najis, apaan sih, atau ga suka sekalian",
-      "biar aku gak berharap lagi",
-      "tujuan ku di sore",
-      "foto berdua sekedar biar aku seneng aja ya hehe",
-    ];
+      const field = document.getElementById("field");
+      const nav = document.getElementById("nav");
+      const maintText = document.getElementById("maintText");
+      const audio = document.getElementById("bgm");
+      const imgOverlay = document.getElementById("imgOverlay");
+      const overlayImg = document.getElementById("overlayImg");
+      const oneShot = document.getElementById("oneShot");
+      let overlayLocked = false; // kunci tap saat musik "menuju senja" diputar
 
-    // ➜ Jeda antar-teks diperlama (8 detik)
-    const INTERVAL_MS = 5000;
+      function fadeInAudio(el, duration = 1800) {
+        el.volume = 0;
+        el.muted = false;
+        el.play().catch(() => {});
+        const t0 = performance.now();
+        function step(t) {
+          const k = Math.min(1, (t - t0) / duration);
+          el.volume = k; // naik pelan
+          if (k < 1) requestAnimationFrame(step);
+        }
+        requestAnimationFrame(step);
+      }
 
-    let started = false, running = true;
-    let idx = 0, lastTime = performance.now(), acc = 0;
+      function trumpetBurst(count = 24) {
+        for (let i = 0; i < count; i++) {
+          const x = rnd(innerWidth * 0.1, innerWidth * 0.9);
+          const y = rnd(innerHeight * 0.55, innerHeight * 0.85);
+          const el = document.createElement("span");
+          el.className = "heart"; // pakai anim CSS yg sama, tapi isi 🎺
+          el.textContent = "🎺";
+          const size = rnd(18, 28),
+            dur = rnd(1.8, 3.2),
+            drift = rnd(-120, 120) + "px",
+            rise = rnd(60, 140) + "px";
+          el.style.setProperty("--left", x + "px");
+          el.style.setProperty("--top", y + "px");
+          el.style.setProperty("--size", size + "px");
+          el.style.setProperty("--dur", dur + "s");
+          el.style.setProperty("--dx", drift);
+          el.style.setProperty("--dy", rise);
+          el.style.setProperty("--h", "45"); // hue nggak ngaruh ke emoji
+          el.style.setProperty("--rot", rnd(-20, 20) + "deg");
+          el.style.setProperty("--rotEnd", rnd(-60, 60) + "deg");
+          el.style.setProperty("--scale", "1");
+          el.style.setProperty("--scaleEnd", "1");
+          el.addEventListener("animationend", () => el.remove());
+          field.appendChild(el);
+        }
+      }
 
-    // ➜ Tap pertama: musik ON & teks pertama langsung muncul
-    field.addEventListener('click', () => {
-      if (started) return;
-      started = true;
+      // Daftar gambar yang akan ditampilkan berurutan
+      const IMAGE_LIST = [
+        "image1.png",
+        "image2.png",
+        "image3.png",
+        "image4.png",
+      ];
 
-      // sembunyikan banner agar tidak nutup teks
-      maintText.style.display = 'none';
+      function spawnHeart(x, y, n = 1) {
+        for (let i = 0; i < n; i++) {
+          const el = document.createElement("span");
+          el.className = "heart";
+          el.textContent = pick(["🫠", "🫤", "☹️", "🙁", "🥺", "❤️‍🔥"]);
+          const size = 28,
+            dur = 4.8,
+            drift = "0px",
+            rise = "90vh",
+            hue = rnd(330, 360).toFixed(1);
+          el.style.setProperty("--left", x + "px");
+          el.style.setProperty("--top", y + "px");
+          el.style.setProperty("--size", size + "px");
+          el.style.setProperty("--dur", dur + "s");
+          el.style.setProperty("--dx", drift);
+          el.style.setProperty("--dy", rise);
+          el.style.setProperty("--h", hue);
+          el.style.setProperty("--rot", "0deg");
+          el.style.setProperty("--rotEnd", "0deg");
+          el.style.setProperty("--scale", "1");
+          el.style.setProperty("--scaleEnd", "1.18");
+          el.addEventListener("animationend", () => el.remove());
+          field.appendChild(el);
+        }
+      }
 
-      audio.muted = false;
-      audio.play().catch(()=>{});
+      function spawnWord(text, x, y, opts = {}) {
+        const { dur = 5.2, size = 22, drift = "0px", rise = "90vh" } = opts;
+        const el = document.createElement("span");
+        el.className = "word";
+        el.textContent = text;
+        el.style.setProperty("--left", x + "px");
+        el.style.setProperty("--top", y + "px");
+        el.style.setProperty("--size", size + "px");
+        el.style.setProperty("--dur", dur + "s");
+        el.style.setProperty("--dx", drift);
+        el.style.setProperty("--dy", rise);
+        el.style.setProperty("--rot", "0deg");
+        el.style.setProperty("--rotEnd", "0deg");
+        el.style.setProperty("--scale", "1");
+        el.style.setProperty("--scaleEnd", "1.08");
+        el.addEventListener("animationend", () => el.remove());
+        field.appendChild(el);
+      }
 
-      // tampilkan teks pertama segera dengan durasi animasi lebih lama
-      spawnWord(GALAU[idx], innerWidth/2, innerHeight - 44, { dur: 8.0 });
-      idx = (idx + 1) % GALAU.length;
+      // Gerak radial spotlight pada BG
+      addEventListener("mousemove", (e) => {
+        document.body.style.setProperty(
+          "--mx",
+          (e.clientX / window.innerWidth) * 100 + "%"
+        );
+        document.body.style.setProperty(
+          "--my",
+          (e.clientY / window.innerHeight) * 100 + "%"
+        );
+      });
 
-      // reset accumulator supaya hitungan jeda rapi setelah teks pertama
-      acc = 0;
-      lastTime = performance.now();
-    }, { once: true });
+      if (MAINTENANCE) {
+        maintText.style.display = "block";
+        nav.style.display = "none";
+        audio.src = "tbdw.mp3";
 
-    function loopMaint(now){
-      if (!running || !started){
-        lastTime = now;
+        const GALAU = [
+          "Mau foto?, kirim 'MINTAFOTO#' di wa",
+          "aku lagi capek dan sakit hati sama perasaan ini",
+          "kamu bilang belum percaya cowok karena masa lalu",
+          "aku bilang akan berjuang agar kamu bisa percaya cowo lagi termasuk aku",
+          "kata kamu kita beda pendidikan",
+          "respon ku aku nerima kamu apa adanya",
+          "aku capek pas kamu jutek di chat atau ngobrol",
+          "di saat yang sama kamu akrab sama cowok lain di depan aku",
+          "aku liat kamu dm-an di ig sama cowok lain (noe***) sambil pap",
+          "di saat yang sama dm ku jarang banget di read",
+          "aku bingung kamu trauma, minder atau sebenernya ga suka sama aku",
+          "kamu pernah kasih foto ke aku itu yang bikin sakit hatinya, kok bisa",
+          "bilang aja kalau kamu risih, dih najis, apaan sih, atau ga suka sekalian",
+          "biar aku gak berharap lagi",
+          "tujuan ku di sore",
+          "foto berdua sekedar biar aku seneng aja ya hehe",
+          "mending resume atau stop",
+          "apa aku buru-buru??",
+          "apa kamu perlu waktu",
+          "atau apa?",
+        ];
+
+        const INTERVAL_MS = 8000;
+
+        // === State machine: 'idle' -> 'images' (0..4) -> 'running'
+        let phase = "idle";
+        let started = false,
+          running = true;
+        let idxText = 0,
+          lastTime = performance.now(),
+          acc = 0;
+
+        // Untuk urutan gambar
+        let imgIndex = 0;
+
+        // Fungsi tampilkan overlay dengan gambar index tertentu
+        function showImageAt(i) {
+          overlayImg.src = IMAGE_LIST[i];
+          imgOverlay.classList.add("show");
+        }
+        // Fungsi sembunyikan overlay
+        function hideImage() {
+          imgOverlay.classList.remove("show");
+        }
+
+        // Tap di field:
+        field.addEventListener("click", () => {
+          if (phase === "idle") {
+            // Tap pertama: masuk fase images dan tampilkan image1
+            phase = "images";
+            imgIndex = 0;
+            showImageAt(imgIndex);
+            return;
+          }
+          // Saat 'images', tap di luar overlay diabaikan (overlay menutupi layar)
+          // Saat 'running', tap di field diabaikan
+        });
+
+        // Tap di overlay: next image atau selesai lalu lanjut teks
+        // Tap di overlay: next image atau selesai lalu lanjut teks
+        imgOverlay.addEventListener("click", () => {
+          if (phase !== "images") return;
+
+          // jika sedang terkunci (musik menuju senja), abaikan tap
+          if (overlayLocked) return;
+
+          imgIndex++;
+          if (imgIndex < IMAGE_LIST.length) {
+            showImageAt(imgIndex); // ganti ke gambar berikutnya
+
+            // SAAT MASUK image2 (index = 1) → putar "menuju senja.mp3" dan kunci overlay
+            if (imgIndex === 1) {
+              overlayLocked = true;
+              oneShot.src = "menuju senja.mp3";
+              oneShot.currentTime = 0;
+              oneShot.loop = false;
+              // play() dalam konteks gesture (click) supaya lolos autoplay policy
+              oneShot.play().catch(() => {
+                overlayLocked = false;
+              });
+              oneShot.onended = () => {
+                overlayLocked = false; // baru boleh tap lagi setelah musik selesai
+              };
+            }
+          } else {
+            // Semua gambar sudah selesai ⇒ transisi ke teks
+            hideImage();
+
+            // burst sederhana 🎺
+            trumpetBurst(26);
+
+            // Sembunyikan banner & mulai musik latar dengan fade-in
+            maintText.style.display = "none";
+            audio.src = "tbdw.mp3"; // jaga-jaga (sudah diset di atas sih)
+            fadeInAudio(audio, 1800);
+
+            // Munculkan teks pertama lalu lanjut loop
+            spawnWord(GALAU[idxText], innerWidth / 2, innerHeight - 44, {
+              dur: 8.0,
+            });
+            idxText = (idxText + 1) % GALAU.length;
+
+            acc = 0;
+            lastTime = performance.now();
+            started = true;
+            phase = "running";
+          }
+        });
+
+        function loopMaint(now) {
+          if (!running || !started) {
+            lastTime = now;
+            requestAnimationFrame(loopMaint);
+            return;
+          }
+          const dt = now - lastTime;
+          lastTime = now;
+          acc += dt;
+
+          while (acc >= INTERVAL_MS) {
+            spawnWord(GALAU[idxText], innerWidth / 2, innerHeight - 44, {
+              dur: 8.0,
+            });
+            idxText = (idxText + 1) % GALAU.length;
+            acc -= INTERVAL_MS;
+          }
+          requestAnimationFrame(loopMaint);
+        }
         requestAnimationFrame(loopMaint);
-        return;
-      }
-      const dt = now - lastTime;
-      lastTime = now;
-      acc += dt;
 
-      while (acc >= INTERVAL_MS){
-        // ➜ Teks berikutnya juga pakai durasi lebih lama
-        spawnWord(GALAU[idx], innerWidth/2, innerHeight - 44, { dur: 8.0 });
-        idx = (idx + 1) % GALAU.length;
-        acc -= INTERVAL_MS;
-      }
-      requestAnimationFrame(loopMaint);
-    }
-    requestAnimationFrame(loopMaint);
-
-    document.addEventListener('visibilitychange', () => {
-      if (document.hidden){
-        running = false;
-        acc = 0;
+        document.addEventListener("visibilitychange", () => {
+          if (document.hidden) {
+            running = false;
+            acc = 0;
+          } else {
+            running = true;
+            lastTime = performance.now();
+          }
+        });
       } else {
-        running = true;
-        lastTime = performance.now();
-      }
-    });
+        // === Mode normal (tanpa maintenance) tetap sama ===
+        maintText.style.display = "none";
+        nav.style.display = "flex";
+        audio.src = "monolog.mp3";
 
-  } else {
-    maintText.style.display = 'none';
-    nav.style.display = 'flex';
-    audio.src = 'monolog.mp3';
+        const TEXTS = [
+          "From Nana Wartana",
+          "I’ll try to make you believe in men again",
+          "Always be my favorite notification",
+          "Kamu versi terbaik dari mimpiku",
+          "Hmmmmm",
+          "Hahahahahahahaha",
+          "Apakah Semesta merestui kita😁",
+          "To Salsabilla Lutfiah Rifdah",
+          "Salbrut",
+          "Caca Cantik",
+          "Curug Muara Jaya Let's go?",
+          "Sudah siap ngalahin aku funrun?",
+          "Aku rajin cuci sepatu kok",
+          "Aku mandi 2x sehari",
+          "Dasternya minjem lagi, rabu main lagi, semoga kalah lagi",
+          "Aku orangnya gaje dan random kalo ke orang deket",
+          "Musik nyala gak?",
+          "143",
+          "Mencoba mengurangi obsesi",
+          "Mengejar terus tapi gaada usaha balik emang bener cape ya:(",
+          "Ca kalo aku mulai buat kamu risih bilang aja",
+          "Aku sadar diri",
+          "Aku kek gaguna kalo kamu cemberut mulu:(",
+          "Aku masih mencoba agar kamu percaya cowo dan aku",
+        ];
 
-    const TEXTS = [
-      "From Nana Wartana",
-      "I’ll try to make you believe in men again",
-      "Always be my favorite notification",
-      "Kamu versi terbaik dari mimpiku",
-      "Hmmmmm",
-      "Hahahahahahahaha",
-      "Apakah Semesta merestui kita😁",
-      "To Salsabilla Lutfiah Rifdah",
-      "Salbrut",
-      "Caca Cantik",
-      "Curug Muara Jaya Let's go?",
-      "Sudah siap ngalahin aku funrun?",
-      "Aku rajin cuci sepatu kok",
-      "Aku mandi 2x sehari",
-      "Dasternya minjem lagi, rabu main lagi, semoga kalah lagi",
-      "Aku orangnya gaje dan random kalo ke orang deket",
-      "Musik nyala gak?",
-      "143",
-      "Mencoba mengurangi obsesi",
-      "Mengejar terus tapi gaada usaha balik emang bener cape ya:(",
-      "Ca kalo aku mulai buat kamu risih bilang aja",
-      "Aku sadar diri",
-      "Aku kek gaguna kalo kamu cemberut mulu:(",
-      "Aku masih mencoba agar kamu percaya cowo dan aku"
-    ];
+        const HEARTS_PER_SEC = 16;
+        const WORDS_PER_SEC = 1;
+        const TAP_HINT_EVERY = 2000;
 
-    const HEARTS_PER_SEC = 16;
-    const WORDS_PER_SEC  = 1;
-    const TAP_HINT_EVERY = 2000;
+        let hasStarted = false,
+          running = true;
+        let accHeart = 0,
+          accWord = 0,
+          lastTime = performance.now();
+        let hintTimer = 0;
 
-    let hasStarted = false, running = true;
-    let accHeart = 0, accWord = 0, lastTime = performance.now();
-    let hintTimer = 0;
+        field.addEventListener(
+          "click",
+          () => {
+            if (hasStarted) return;
+            hasStarted = true;
+            audio.muted = false;
+            audio.play().catch(() => {});
+          },
+          { once: true }
+        );
 
-    field.addEventListener('click', () => {
-      if (hasStarted) return;
-      hasStarted = true;
-      audio.muted = false;
-      audio.play().catch(()=>{});
-    }, { once: true });
+        function loopNormal(now) {
+          if (!running) {
+            lastTime = now;
+            requestAnimationFrame(loopNormal);
+            return;
+          }
+          const dt = Math.min(0.05, (now - lastTime) / 1000);
+          lastTime = now;
 
-    function loopNormal(now){
-      if (!running){
-        lastTime = now;
+          accHeart += dt * HEARTS_PER_SEC;
+          while (accHeart >= 1) {
+            const x = rnd(innerWidth * 0.2, innerWidth * 0.8),
+              y = innerHeight - 24;
+            spawnHeart(x, y, 1);
+            accHeart -= 1;
+          }
+
+          if (!hasStarted) {
+            hintTimer += dt * 1000;
+            if (hintTimer >= TAP_HINT_EVERY) {
+              spawnWord(
+                "Tap layar 1x caaaaaaa!!",
+                innerWidth / 2,
+                innerHeight - 44
+              );
+              hintTimer = 0;
+            }
+          }
+
+          if (hasStarted) {
+            accWord += dt * WORDS_PER_SEC;
+            while (accWord >= 1) {
+              const x = rnd(innerWidth * 0.25, innerWidth * 0.75),
+                y = innerHeight - 44;
+              spawnWord(pick(TEXTS), x, y);
+              accWord -= 1;
+            }
+          }
+          requestAnimationFrame(loopNormal);
+        }
         requestAnimationFrame(loopNormal);
-        return;
-      }
-      const dt = Math.min(0.05, (now - lastTime)/1000);
-      lastTime = now;
 
-      accHeart += dt * HEARTS_PER_SEC;
-      while (accHeart >= 1){
-        const x = rnd(innerWidth*0.2, innerWidth*0.8), y = innerHeight - 24;
-        spawnHeart(x, y, 1);
-        accHeart -= 1;
+        document.addEventListener("visibilitychange", () => {
+          if (document.hidden) {
+            running = false;
+            accHeart = 0;
+            accWord = 0;
+            hintTimer = 0;
+          } else {
+            running = true;
+            lastTime = performance.now();
+          }
+        });
       }
-
-      if (!hasStarted){
-        hintTimer += dt * 1000;
-        if (hintTimer >= TAP_HINT_EVERY){
-          spawnWord("Tap layar 1x caaaaaaa!!", innerWidth/2, innerHeight-44);
-          hintTimer = 0;
-        }
-      }
-
-      if (hasStarted){
-        accWord += dt * WORDS_PER_SEC;
-        while (accWord >= 1){
-          const x = rnd(innerWidth*0.25, innerWidth*0.75), y = innerHeight - 44;
-          spawnWord(pick(TEXTS), x, y);
-          accWord -= 1;
-        }
-      }
-      requestAnimationFrame(loopNormal);
-    }
-    requestAnimationFrame(loopNormal);
-
-    document.addEventListener('visibilitychange', () => {
-      if (document.hidden){
-        running = false;
-        accHeart = 0; accWord = 0; hintTimer = 0;
-      } else {
-        running = true;
-        lastTime = performance.now();
-      }
-    });
-  }
-  </script>
-</body>
+    </script>
+  </body>
 </html>
