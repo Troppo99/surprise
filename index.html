@@ -224,7 +224,7 @@
       const imgOverlay = document.getElementById("imgOverlay");
       const overlayImg = document.getElementById("overlayImg");
       const oneShot = document.getElementById("oneShot");
-      let overlayLocked = false; // kunci tap saat musik "menuju senja" diputar
+      // let overlayLocked = false; // kunci tap saat musik "menuju senja" diputar
 
       function fadeInAudio(el, duration = 1800) {
         el.volume = 0;
@@ -235,6 +235,23 @@
           const k = Math.min(1, (t - t0) / duration);
           el.volume = k; // naik pelan
           if (k < 1) requestAnimationFrame(step);
+        }
+        requestAnimationFrame(step);
+      }
+
+      function fadeOutAudio(el, duration = 600) {
+        if (!el) return;
+        const startVol = el.volume ?? 1;
+        const t0 = performance.now();
+        function step(t) {
+          const k = Math.min(1, (t - t0) / duration);
+          el.volume = Math.max(0, startVol * (1 - k));
+          if (k < 1) requestAnimationFrame(step);
+          else {
+            el.pause();
+            el.currentTime = 0;
+            el.volume = startVol;
+          }
         }
         requestAnimationFrame(step);
       }
@@ -401,7 +418,7 @@
           if (phase !== "images") return;
 
           // jika sedang terkunci (musik menuju senja), abaikan tap
-          if (overlayLocked) return;
+          // if (overlayLocked) return;
 
           imgIndex++;
           if (imgIndex < IMAGE_LIST.length) {
@@ -409,19 +426,19 @@
 
             // SAAT MASUK image2 (index = 1) → putar "menuju senja.mp3" dan kunci overlay
             if (imgIndex === 1) {
-              overlayLocked = true;
               oneShot.src = "menuju senja.mp3";
               oneShot.currentTime = 0;
               oneShot.loop = false;
-              // play() dalam konteks gesture (click) supaya lolos autoplay policy
-              oneShot.play().catch(() => {
-                overlayLocked = false;
-              });
-              oneShot.onended = () => {
-                overlayLocked = false; // baru boleh tap lagi setelah musik selesai
-              };
+              // volume awal kecil agar enak masuk
+              oneShot.volume = 0.9;
+              oneShot.play().catch(() => {});
             }
           } else {
+            // HENTIKAN musik "menuju senja" secara halus, lalu lanjut
+            if (!oneShot.paused) {
+              // pakai fadeOut, atau kalau mau instan gunakan: oneShot.pause(); oneShot.currentTime = 0;
+              fadeOutAudio(oneShot, 600);
+            }
             // Semua gambar sudah selesai ⇒ transisi ke teks
             hideImage();
 
