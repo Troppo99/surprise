@@ -1,4 +1,4 @@
-#<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="id">
   <head>
     <meta charset="utf-8" />
@@ -6,216 +6,247 @@
     <title>Surprise</title>
     <meta name="robots" content="noindex, nofollow" />
     <style>
-      :root {
-        --bg-a: 320 88% 54%;
-        --bg-b: 255 88% 58%;
-      }
-      * {
-        box-sizing: border-box;
-      }
-      html,
+      :root { --bg-a: 320 88% 54%; --bg-b: 255 88% 58%; }
+      * { box-sizing: border-box; }
+      html, body { height: 100%; }
       body {
-        height: 100%;
-      }
-      body {
-        margin: 0;
-        overflow: hidden;
-        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto,
-          "Helvetica Neue", Arial;
-        /* HAPUS filter di body agar anak2 (overlay) tidak kena hue-rotate */
-        background: #000; /* fallback */
+        margin: 0; overflow: hidden;
+        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
+        background: #000;
       }
 
-      /* === Layer background terpisah agar filter hanya ke BG, bukan ke konten === */
+      /* ===== BG anim (tetap) ===== */
       #bg {
-        position: fixed;
-        inset: 0;
-        z-index: 0;
-        pointer-events: none;
-        background: radial-gradient(
-            1000px 1000px at var(--mx, 50%) var(--my, 50%),
-            hsl(0 0% 100%/0.06),
-            transparent 60%
-          ),
+        position: fixed; inset: 0; z-index: 0; pointer-events: none;
+        background:
+          radial-gradient(1000px 1000px at var(--mx,50%) var(--my,50%), hsl(0 0% 100%/.06), transparent 60%),
           linear-gradient(135deg, hsl(var(--bg-a)), hsl(var(--bg-b)));
         animation: bg-pan 18s linear infinite;
       }
-      @keyframes bg-pan {
-        0% {
-          filter: hue-rotate(0);
-        }
-        100% {
-          filter: hue-rotate(360deg);
-        }
-      }
+      @keyframes bg-pan { 0% { filter: hue-rotate(0); } 100% { filter: hue-rotate(360deg); } }
 
-      /* Semua konten lain di atas BG */
-      #app {
-        position: relative;
-        z-index: 1;
-      }
+      #app { position: relative; z-index: 1; }
+      #field { position: fixed; inset: 0; }
 
-      #field {
-        position: fixed;
-        inset: 0;
-      }
-
-      .heart,
-      .word {
-        position: absolute;
-        left: var(--left);
-        top: var(--top);
+      .heart, .word {
+        position: absolute; left: var(--left); top: var(--top);
         transform: translate(-50%, -50%) scale(var(--scale)) rotate(var(--rot));
-        line-height: 1;
-        user-select: none;
-        pointer-events: none;
-        filter: drop-shadow(0 12px 24px hsl(0 0% 0%/0.25));
-        opacity: 0.96;
+        line-height: 1; user-select: none; pointer-events: none;
+        filter: drop-shadow(0 12px 24px hsl(0 0% 0%/.25)); opacity: .96;
         animation: float var(--dur) linear forwards;
       }
       .heart {
-        font-size: var(--size);
-        color: hsl(var(--h) 90% 62%);
-        text-shadow: 0 0 8px hsl(var(--h) 90% 62%/0.75),
-          0 0 18px hsl(var(--h) 90% 62%/0.45),
-          0 6px 18px hsl(var(--h) 50% 30%/0.35);
+        font-size: var(--size); color: hsl(var(--h) 90% 62%);
+        text-shadow:
+          0 0 8px hsl(var(--h) 90% 62%/.75),
+          0 0 18px hsl(var(--h) 90% 62%/.45),
+          0 6px 18px hsl(var(--h) 50% 30%/.35);
       }
       .word {
-        font-size: var(--size);
-        font-weight: 700;
-        color: #fff;
-        letter-spacing: 0.3px;
-        text-shadow: 0 0 10px hsl(0 0% 100%/0.7), 0 10px 30px hsl(0 0% 0%/0.35);
+        font-size: var(--size); font-weight: 700; color: #fff; letter-spacing: .3px;
+        text-shadow: 0 0 10px hsl(0 0% 100%/.7), 0 10px 30px hsl(0 0% 0%/.35);
       }
       @keyframes float {
         to {
-          transform: translate(calc(-50% + var(--dx)), calc(-50% - var(--dy)))
-            scale(var(--scaleEnd)) rotate(var(--rotEnd));
+          transform: translate(calc(-50% + var(--dx)), calc(-50% - var(--dy))) scale(var(--scaleEnd)) rotate(var(--rotEnd));
           opacity: 0;
         }
       }
 
-      .nav-container {
-        position: fixed;
-        top: 16px;
-        right: 16px;
-        z-index: 50;
-        display: none;
-        gap: 10px;
-      }
+      .nav-container { position: fixed; top: 16px; right: 16px; z-index: 50; display: none; gap: 10px; }
       .nav-btn {
-        padding: 10px 14px;
-        border: 0;
-        border-radius: 999px;
-        font-weight: 700;
-        letter-spacing: 0.2px;
-        cursor: pointer;
-        backdrop-filter: blur(6px);
-        background: hsl(0 0% 100%/0.18);
-        color: white;
-        box-shadow: 0 6px 20px hsl(0 0% 0%/0.25);
-        text-decoration: none;
-        display: inline-block;
-        text-align: center;
+        padding: 10px 14px; border: 0; border-radius: 999px; font-weight: 700; letter-spacing: .2px; cursor: pointer;
+        backdrop-filter: blur(6px); background: hsl(0 0% 100%/.18); color: #fff; box-shadow: 0 6px 20px hsl(0 0% 0%/.25);
+        text-decoration: none; display: inline-block; text-align: center;
       }
-      .nav-btn:hover {
-        background: hsl(0 0% 100%/0.28);
-      }
+      .nav-btn:hover { background: hsl(0 0% 100%/.28); }
 
       .teks-pemeliharaan {
-        position: fixed; /* sebelumnya absolute */
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        font-size: 20px;
-        color: #fff;
-        text-align: center;
-        padding: 10px 14px;
-        border-radius: 12px;
-        background: hsl(0 0% 0%/0.25);
-        backdrop-filter: blur(4px);
-        z-index: 100;
-        pointer-events: none;
-        display: block;
+        position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%);
+        font-size: 20px; color: #fff; text-align: center; padding: 10px 14px; border-radius: 12px;
+        background: hsl(0 0% 0%/.25); backdrop-filter: blur(4px); z-index: 100; pointer-events: none; display: block;
       }
 
-      /* === Overlay gambar (urutan 5 gambar) === */
+      /* Overlay gambar mode 1 */
       .image-overlay {
-        position: fixed;
-        inset: 0;
-        z-index: 300;
-        display: grid;
-        place-items: center;
-        background: #fff; /* selalu putih */
-        opacity: 0;
-        visibility: hidden;
-        transition: opacity 0.35s ease, visibility 0.35s ease;
-        pointer-events: none; /* non-aktif saat hidden */
+        position: fixed; inset: 0; z-index: 300; display: grid; place-items: center;
+        background: #fff; opacity: 0; visibility: hidden; transition: opacity .35s ease, visibility .35s ease;
+        pointer-events: none;
       }
-      .image-overlay.show {
-        opacity: 1;
-        visibility: visible;
-        pointer-events: auto; /* aktif saat tampil */
+      .image-overlay.show { opacity: 1; visibility: visible; pointer-events: auto; }
+      .image-overlay img { max-width: 100vw; height: auto; width: auto; display: block; filter: none; }
+
+      /* ===== MODE 2: Slider (overlay di atas BG) ===== */
+      .slider-wrap {
+        position: fixed; inset: 0; z-index: 200;
+        display: none; place-items: center;
+        background: transparent; pointer-events: auto;
       }
-      .image-overlay img {
-        /* Pusat, jaga rasio, tidak melebihi resolusi asli */
-        max-width: 100vw; /* jangan lebih lebar dari device */
-        height: auto; /* tinggi mengikuti rasio */
-        width: auto; /* gunakan ukuran asli jika lebih kecil dari viewport */
-        display: block;
-        /* Pastikan tidak kena filter dari BG karena berada di atas dan z-index berbeda */
-        filter: none;
+      .slider {
+        position: relative; width: 100vw; height: 100vh;
+        overflow: hidden; display: grid; place-items: center; background: transparent;
+      }
+      .slides {
+        display: flex; height: 100%;
+        will-change: transform;
+        transition: transform 420ms ease;
+        touch-action: pan-y; /* biar scroll vertikal tetap jalan */
+        cursor: grab;
+      }
+      .slide {
+        width: 100vw; height: 100vh;
+        display: grid; place-items: center; background: transparent;
+      }
+      .slide img, .slide video {
+        max-width: 100vw; max-height: 100vh;
+        width: auto; height: auto; object-fit: contain; display: block;
+        -webkit-user-drag: none; user-select: none;
+      }
+
+      .dots {
+        position: absolute; bottom: 18px; left: 50%; transform: translateX(-50%);
+        display: flex; gap: 8px; z-index: 3;
+      }
+      .dot { width: 8px; height: 8px; border-radius: 999px; background: hsl(0 0% 100%/.35); transition: all .25s ease; }
+      .dot.active { width: 22px; background: #fff; }
+
+      .arrow {
+        position: absolute; top: 50%; transform: translateY(-50%);
+        padding: 8px 12px; border-radius: 999px; border: 0;
+        background: hsl(0 0% 100%/.15); color: #fff; cursor: pointer; z-index: 3; backdrop-filter: blur(6px);
+      }
+      .arrow:hover { background: hsl(0 0% 100%/.25); }
+      .arrow.left { left: 12px; }
+      .arrow.right { right: 12px; }
+
+      /* Panah hanya di desktop (pointer fine) */
+      .arrow { display: none; }
+      @media (hover:hover) and (pointer:fine) { .arrow { display: inline-block; } }
+
+      /* Saat drag aktif, hindari text selection */
+      body.dragging, .slider-wrap.dragging, .slides.dragging, .slide.dragging {
+        user-select: none; cursor: grabbing;
       }
     </style>
   </head>
   <body>
-    <!-- Layer BG terpisah -->
     <div id="bg" aria-hidden="true"></div>
 
-    <!-- Semua konten di sini -->
     <div id="app">
-      <audio id="bgm" autoplay loop muted></audio>
-      <audio id="bgm" autoplay loop muted></audio>
-      <audio id="oneShot"></audio>
+      <audio id="bgm" preload="auto" loop muted></audio>
+      <audio id="oneShot" preload="auto"></audio>
 
       <div class="nav-container" id="nav">
-        <a
-          href="wedding-website/index.html"
-          target="_blank"
-          rel="noopener"
-          class="nav-btn"
-          >Wedding</a
-        >
-        <a
-          href="https://nwr27.github.io/nanawartana"
-          target="_blank"
-          rel="noopener"
-          class="nav-btn"
-          >Portfolio</a
-        >
+        <a href="wedding-website/index.html" target="_blank" rel="noopener" class="nav-btn">Wedding</a>
+        <a href="https://nwr27.github.io/nanawartana" target="_blank" rel="noopener" class="nav-btn">Portfolio</a>
       </div>
 
-      <span class="teks-pemeliharaan" id="maintText"
-        >sedang pemeliharaan, server sedang galau🙂 (tap 1x)</span
-      >
+      <span class="teks-pemeliharaan" id="maintText">sedang pemeliharaan, server sedang galau🙂 (tap 1x)</span>
 
       <div id="field" aria-hidden="true"></div>
 
-      <!-- Overlay gambar untuk urutan 5 tap pertama -->
+      <!-- Overlay (mode 1 maintenance flow) -->
       <div id="imgOverlay" class="image-overlay" aria-hidden="true">
         <img src="image1.jpg" alt="image" id="overlayImg" />
+      </div>
+
+      <!-- MODE 2 Slider IG-like -->
+      <div id="sliderWrap" class="slider-wrap" aria-hidden="true" style="display:none;">
+        <div class="slider" id="slider">
+          <button class="arrow left" id="btnPrev" aria-label="Sebelumnya">‹</button>
+          <div class="slides" id="slides"></div>
+          <button class="arrow right" id="btnNext" aria-label="Berikutnya">›</button>
+          <div class="dots" id="dots"></div>
+        </div>
       </div>
     </div>
 
     <script>
-      const MAINTENANCE = false;
+      /* =========================
+         KONFIGURASI
+      ==========================*/
+      const MODE = 2;            // 1 = tampilan lama, 2 = IG-like feed
+      const MAINTENANCE = false; // dipakai saat MODE === 1
 
-      function rnd(a, b) {
-        return a + Math.random() * (b - a);
-      }
-      function pick(arr) {
-        return arr[Math.floor(Math.random() * arr.length)];
-      }
+      // Media untuk MODE 2 (campur gambar & video)
+      const MEDIA_LIST = [
+  "media/ba045616-5fd6-445a-a395-a80be5b9af0b.mp4",
+  "media/IMG_1889.PNG",
+  "media/IMG_1842.JPG",
+  "media/IMG_1471.JPG",
+  "media/v14044g50000d2kop9fog65obsojp170.mp4",
+  "media/IMG_1714.mp4",
+  "media/IMG_1526.mp4",
+  "media/IMG_2345.mp4",
+  "media/IMG_1524.mp4",
+  "media/IMG_1893.mp4",
+  "media/IMG_2351.mp4",
+  "media/IMG_2371.mp4",
+  "media/IMG_2428.mp4",
+  "media/IMG_2429.mp4",
+  "media/IMG_2378.mp4",
+  "media/IMG_2430.mp4",
+  "media/IMG_2346.mp4",
+  "media/IMG_1516.mp4",
+  "media/IMG_0450.jpg",
+  "media/IMG_0455.jpg",
+  "media/IMG_0457.jpg",
+  "media/IMG_1427.jpg",
+  "media/IMG_1433.jpg",
+  "media/IMG_1438.jpg",
+  "media/IMG_1443.jpg",
+  "media/IMG_1449.jpg",
+  "media/IMG_1477.jpg",
+  "media/IMG_1486.jpg",
+  "media/IMG_1487.jpg",
+  "media/IMG_1492.jpg",
+  "media/IMG_1495.jpg",
+  "media/IMG_1497.jpg",
+  "media/IMG_1498.jpg",
+  "media/IMG_1500.jpg",
+  "media/IMG_1515.jpg",
+  "media/IMG_1530.jpg",
+  "media/IMG_1706.jpg",
+  "media/IMG_1710.jpg",
+  "media/IMG_1713.jpg",
+  "media/IMG_1729.jpg",
+  "media/IMG_1730.jpg",
+  "media/IMG_1733.jpg",
+  "media/IMG_1734.jpg",
+  "media/IMG_1768.jpg",
+  "media/IMG_1774.jpg",
+  "media/IMG_1991.jpg",
+  "media/IMG_1992.jpg",
+  "media/IMG_2199.jpg",
+  "media/IMG_2200.jpg",
+  "media/IMG_2213.jpg",
+  "media/IMG_2218.jpg",
+  "media/IMG_2331.jpg",
+  "media/IMG_2337.jpg",
+  "media/IMG_2349.jpg",
+  "media/IMG_2366.jpg",
+  "media/IMG_2367.jpg",
+  "media/IMG_2368.jpg",
+  "media/IMG_2369.jpg",
+  "media/IMG_2370.jpg",
+  "media/IMG_2375.jpg",
+  "media/IMG_2376.jpg",
+  "media/IMG_2377.jpg",
+  "media/IMG_2406.jpg",
+  "media/IMG_2407.jpg",
+  "media/IMG_2423.jpg",
+  "media/IMG_2424.jpg",
+  "media/IMG_2425.jpg",
+  "media/IMG_2426.jpg",
+  "media/IMG_2427.jpg",
+];
+
+
+      /* =========================
+         UTIL
+      ==========================*/
+      function rnd(a,b){ return a + Math.random()*(b-a); }
+      function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
 
       const field = document.getElementById("field");
       const nav = document.getElementById("nav");
@@ -224,378 +255,299 @@
       const imgOverlay = document.getElementById("imgOverlay");
       const overlayImg = document.getElementById("overlayImg");
       const oneShot = document.getElementById("oneShot");
-      // let overlayLocked = false; // kunci tap saat musik "menuju senja" diputar
+
+      const sliderWrap = document.getElementById("sliderWrap");
+      const slidesEl = document.getElementById("slides");
+      const dotsEl = document.getElementById("dots");
+      const btnPrev = document.getElementById("btnPrev");
+      const btnNext = document.getElementById("btnNext");
 
       function fadeInAudio(el, duration = 1800) {
-        el.volume = 0;
-        el.muted = false;
-        el.play().catch(() => {});
+        el.volume = 0; el.muted = false;
+        el.play().catch(()=>{});
         const t0 = performance.now();
-        function step(t) {
-          const k = Math.min(1, (t - t0) / duration);
-          el.volume = k; // naik pelan
-          if (k < 1) requestAnimationFrame(step);
-        }
+        function step(t){ const k = Math.min(1,(t-t0)/duration); el.volume = k; if(k<1) requestAnimationFrame(step); }
         requestAnimationFrame(step);
       }
-
       function fadeOutAudio(el, duration = 600) {
-        if (!el) return;
-        const startVol = el.volume ?? 1;
-        const t0 = performance.now();
-        function step(t) {
-          const k = Math.min(1, (t - t0) / duration);
-          el.volume = Math.max(0, startVol * (1 - k));
-          if (k < 1) requestAnimationFrame(step);
-          else {
-            el.pause();
-            el.currentTime = 0;
-            el.volume = startVol;
-          }
+        if(!el) return; const startVol = el.volume ?? 1; const t0 = performance.now();
+        function step(t){
+          const k = Math.min(1,(t-t0)/duration); el.volume = Math.max(0,startVol*(1-k));
+          if(k<1) requestAnimationFrame(step); else { el.pause(); el.currentTime=0; el.volume=startVol; }
         }
         requestAnimationFrame(step);
       }
 
+      /* ===== Mode 1 (kode existing ringkas) ===== */
       function trumpetBurst(count = 24) {
-        for (let i = 0; i < count; i++) {
-          const x = rnd(innerWidth * 0.1, innerWidth * 0.9);
-          const y = rnd(innerHeight * 0.55, innerHeight * 0.85);
+        for (let i=0;i<count;i++){
+          const x = rnd(innerWidth*.1, innerWidth*.9);
+          const y = rnd(innerHeight*.55, innerHeight*.85);
           const el = document.createElement("span");
-          el.className = "heart"; // pakai anim CSS yg sama, tapi isi 🎺
-          el.textContent = "🎺";
-          const size = rnd(18, 28),
-            dur = rnd(1.8, 3.2),
-            drift = rnd(-120, 120) + "px",
-            rise = rnd(60, 140) + "px";
-          el.style.setProperty("--left", x + "px");
-          el.style.setProperty("--top", y + "px");
-          el.style.setProperty("--size", size + "px");
-          el.style.setProperty("--dur", dur + "s");
-          el.style.setProperty("--dx", drift);
-          el.style.setProperty("--dy", rise);
-          el.style.setProperty("--h", "45"); // hue nggak ngaruh ke emoji
-          el.style.setProperty("--rot", rnd(-20, 20) + "deg");
-          el.style.setProperty("--rotEnd", rnd(-60, 60) + "deg");
-          el.style.setProperty("--scale", "1");
-          el.style.setProperty("--scaleEnd", "1");
-          el.addEventListener("animationend", () => el.remove());
-          field.appendChild(el);
+          el.className = "heart"; el.textContent = "🎺";
+          const size=rnd(18,28), dur=rnd(1.8,3.2), drift=rnd(-120,120)+"px", rise=rnd(60,140)+"px";
+          el.style.setProperty("--left", x+"px"); el.style.setProperty("--top", y+"px");
+          el.style.setProperty("--size", size+"px"); el.style.setProperty("--dur", dur+"s");
+          el.style.setProperty("--dx", drift); el.style.setProperty("--dy", rise);
+          el.style.setProperty("--h", "45"); el.style.setProperty("--rot", rnd(-20,20)+"deg"); el.style.setProperty("--rotEnd", rnd(-60,60)+"deg");
+          el.style.setProperty("--scale","1"); el.style.setProperty("--scaleEnd","1");
+          el.addEventListener("animationend",()=>el.remove()); field.appendChild(el);
         }
       }
-
-      // Daftar gambar yang akan ditampilkan berurutan
-      const IMAGE_LIST = [
-        "image1.png",
-        "image2.png",
-        "image3.png",
-        "image4.png",
-        "image5.png",
-      ];
-
-      function spawnHeart(x, y, n = 1) {
-        for (let i = 0; i < n; i++) {
-          const el = document.createElement("span");
-          el.className = "heart";
-          el.textContent = pick(["❤️", "💕", "💓", "❤️‍🩹", "💖", "❤️‍🔥"]);
-          const size = 28,
-            dur = 4.8,
-            drift = "0px",
-            rise = "90vh",
-            hue = rnd(330, 360).toFixed(1);
-          el.style.setProperty("--left", x + "px");
-          el.style.setProperty("--top", y + "px");
-          el.style.setProperty("--size", size + "px");
-          el.style.setProperty("--dur", dur + "s");
-          el.style.setProperty("--dx", drift);
-          el.style.setProperty("--dy", rise);
-          el.style.setProperty("--h", hue);
-          el.style.setProperty("--rot", "0deg");
-          el.style.setProperty("--rotEnd", "0deg");
-          el.style.setProperty("--scale", "1");
-          el.style.setProperty("--scaleEnd", "1.18");
-          el.addEventListener("animationend", () => el.remove());
-          field.appendChild(el);
+      function spawnHeart(x,y,n=1){
+        for(let i=0;i<n;i++){
+          const el=document.createElement("span"); el.className="heart"; el.textContent=pick(["❤️","💕","💓","❤️‍🩹","💖","❤️‍🔥"]);
+          const size=28, dur=4.8, drift="0px", rise="90vh", hue=rnd(330,360).toFixed(1);
+          el.style.setProperty("--left",x+"px"); el.style.setProperty("--top",y+"px");
+          el.style.setProperty("--size",size+"px"); el.style.setProperty("--dur",dur+"s");
+          el.style.setProperty("--dx",drift); el.style.setProperty("--dy",rise);
+          el.style.setProperty("--h",hue); el.style.setProperty("--rot","0deg"); el.style.setProperty("--rotEnd","0deg");
+          el.style.setProperty("--scale","1"); el.style.setProperty("--scaleEnd","1.18");
+          el.addEventListener("animationend",()=>el.remove()); field.appendChild(el);
         }
       }
-
-      function spawnWord(text, x, y, opts = {}) {
-        const { dur = 5.2, size = 22, drift = "0px", rise = "90vh" } = opts;
-        const el = document.createElement("span");
-        el.className = "word";
-        el.textContent = text;
-        el.style.setProperty("--left", x + "px");
-        el.style.setProperty("--top", y + "px");
-        el.style.setProperty("--size", size + "px");
-        el.style.setProperty("--dur", dur + "s");
-        el.style.setProperty("--dx", drift);
-        el.style.setProperty("--dy", rise);
-        el.style.setProperty("--rot", "0deg");
-        el.style.setProperty("--rotEnd", "0deg");
-        el.style.setProperty("--scale", "1");
-        el.style.setProperty("--scaleEnd", "1.08");
-        el.addEventListener("animationend", () => el.remove());
-        field.appendChild(el);
+      function spawnWord(text,x,y,opts={}) {
+        const {dur=5.2,size=22,drift="0px",rise="90vh"} = opts;
+        const el=document.createElement("span"); el.className="word"; el.textContent=text;
+        el.style.setProperty("--left",x+"px"); el.style.setProperty("--top",y+"px");
+        el.style.setProperty("--size",size+"px"); el.style.setProperty("--dur",dur+"s");
+        el.style.setProperty("--dx",drift); el.style.setProperty("--dy",rise);
+        el.style.setProperty("--rot","0deg"); el.style.setProperty("--rotEnd","0deg");
+        el.style.setProperty("--scale","1"); el.style.setProperty("--scaleEnd","1.08");
+        el.addEventListener("animationend",()=>el.remove()); field.appendChild(el);
       }
 
-      // Gerak radial spotlight pada BG
-      addEventListener("mousemove", (e) => {
-        document.body.style.setProperty(
-          "--mx",
-          (e.clientX / window.innerWidth) * 100 + "%"
-        );
-        document.body.style.setProperty(
-          "--my",
-          (e.clientY / window.innerHeight) * 100 + "%"
-        );
+      addEventListener("mousemove",(e)=>{
+        document.body.style.setProperty("--mx",(e.clientX/innerWidth)*100+"%");
+        document.body.style.setProperty("--my",(e.clientY/innerHeight)*100+"%");
       });
 
-      if (MAINTENANCE) {
-        maintText.style.display = "block";
-        nav.style.display = "none";
-        audio.src = "tbdw.mp3";
-
-        const GALAU = [
-          "Mau foto?, kirim 'MINTAFOTO#plis' di wa",
-          "aku lagi capek dan sakit hati sama perasaan ini",
-          "kamu bilang belum percaya cowok karena masa lalu",
-          "aku bilang akan berjuang agar kamu bisa percaya cowo lagi termasuk aku",
-          "kata kamu kita beda pendidikan",
-          "respon ku aku nerima kamu apa adanya",
-          "aku capek pas kamu jutek di chat atau ngobrol",
-          "di saat yang sama kamu akrab sama cowok lain di depan aku",
-          "aku liat kamu dm-an di ig sama cowok lain (noe***) sambil pap",
-          "di saat yang sama dm ku jarang banget di read",
-          "aku bingung kamu trauma, minder atau sebenernya ga suka sama aku",
-          "kamu pernah kasih foto ke aku itu yang bikin sakit hatinya, kok bisa",
-          "bilang aja kalau kamu risih, dih najis, apaan sih, atau ga suka sekalian",
-          "biar aku gak berharap lagi",
-          "tujuan ku di sore",
-          "foto berdua sekedar biar aku seneng aja ya hehe",
-          //"mending resume atau stop",
-          "apa aku buru-buru??",
-          "apa kamu perlu waktu",
-          "atau apa?",
-        ];
-
-        const INTERVAL_MS = 4000;
-
-        // === State machine: 'idle' -> 'images' (0..4) -> 'running'
-        let phase = "idle";
-        let started = false,
-          running = true;
-        let idxText = 0,
-          lastTime = performance.now(),
-          acc = 0;
-
-        // Untuk urutan gambar
-        let imgIndex = 0;
-
-        // Fungsi tampilkan overlay dengan gambar index tertentu
-        function showImageAt(i) {
-          overlayImg.src = IMAGE_LIST[i];
-          imgOverlay.classList.add("show");
-        }
-        // Fungsi sembunyikan overlay
-        function hideImage() {
-          imgOverlay.classList.remove("show");
-        }
-
-        // Tap di field:
-        field.addEventListener("click", () => {
-          if (phase === "idle") {
-            // Tap pertama: masuk fase images dan tampilkan image1
-            phase = "images";
-            imgIndex = 0;
-            showImageAt(imgIndex);
-            return;
-          }
-          // Saat 'images', tap di luar overlay diabaikan (overlay menutupi layar)
-          // Saat 'running', tap di field diabaikan
-        });
-
-        // Tap di overlay: next image atau selesai lalu lanjut teks
-        // Tap di overlay: next image atau selesai lalu lanjut teks
-        imgOverlay.addEventListener("click", () => {
-          if (phase !== "images") return;
-
-          // jika sedang terkunci (musik menuju senja), abaikan tap
-          // if (overlayLocked) return;
-
-          imgIndex++;
-          if (imgIndex < IMAGE_LIST.length) {
-            showImageAt(imgIndex); // ganti ke gambar berikutnya
-
-            // SAAT MASUK image2 (index = 1) → putar "menuju senja.mp3" dan kunci overlay
-            if (imgIndex === 1) {
-              oneShot.src = "menuju senja.mp3";
-              oneShot.currentTime = 0;
-              oneShot.loop = false;
-              // volume awal kecil agar enak masuk
-              oneShot.volume = 0.9;
-              oneShot.play().catch(() => {});
+      function runMode1(){
+        if (MAINTENANCE){
+          nav.style.display="none"; maintText.style.display="block"; audio.src="tbdw.mp3";
+          const GALAU=[/* ... daftar teks ... */"Mau foto?, kirim 'MINTAFOTO#plis' di wa","aku lagi capek dan sakit hati sama perasaan ini","atau apa?"];
+          const INTERVAL_MS=4000;
+          let phase="idle", started=false, running=true, idxText=0, lastTime=performance.now(), acc=0;
+          const IMAGE_LIST=["image1.png","image2.png","image3.png","image4.png","image5.png"]; let imgIndex=0;
+          function showImageAt(i){ overlayImg.src=IMAGE_LIST[i]; imgOverlay.classList.add("show"); }
+          function hideImage(){ imgOverlay.classList.remove("show"); }
+          field.addEventListener("click",()=>{ if(phase==="idle"){ phase="images"; imgIndex=0; showImageAt(imgIndex);} });
+          imgOverlay.addEventListener("click",()=>{
+            if(phase!=="images") return; imgIndex++;
+            if(imgIndex<IMAGE_LIST.length){
+              showImageAt(imgIndex);
+              if(imgIndex===1){ oneShot.src="menuju senja.mp3"; oneShot.currentTime=0; oneShot.loop=false; oneShot.volume=.9; oneShot.play().catch(()=>{}); }
+            } else {
+              if(!oneShot.paused) fadeOutAudio(oneShot,600); hideImage(); trumpetBurst(26);
+              maintText.style.display="none"; audio.src="tbdw.mp3"; fadeInAudio(audio,1800);
+              spawnWord(GALAU[idxText], innerWidth/2, innerHeight-44, {dur:8.0}); idxText=(idxText+1)%GALAU.length;
+              acc=0; lastTime=performance.now(); started=true; phase="running";
             }
-          } else {
-            // HENTIKAN musik "menuju senja" secara halus, lalu lanjut
-            if (!oneShot.paused) {
-              // pakai fadeOut, atau kalau mau instan gunakan: oneShot.pause(); oneShot.currentTime = 0;
-              fadeOutAudio(oneShot, 600);
-            }
-            // Semua gambar sudah selesai ⇒ transisi ke teks
-            hideImage();
-
-            // burst sederhana 🎺
-            trumpetBurst(26);
-
-            // Sembunyikan banner & mulai musik latar dengan fade-in
-            maintText.style.display = "none";
-            audio.src = "tbdw.mp3"; // jaga-jaga (sudah diset di atas sih)
-            fadeInAudio(audio, 1800);
-
-            // Munculkan teks pertama lalu lanjut loop
-            spawnWord(GALAU[idxText], innerWidth / 2, innerHeight - 44, {
-              dur: 8.0,
-            });
-            idxText = (idxText + 1) % GALAU.length;
-
-            acc = 0;
-            lastTime = performance.now();
-            started = true;
-            phase = "running";
-          }
-        });
-
-        function loopMaint(now) {
-          if (!running || !started) {
-            lastTime = now;
+          });
+          function loopMaint(now){
+            if(!running || !started){ lastTime=now; requestAnimationFrame(loopMaint); return; }
+            const dt=now-lastTime; lastTime=now; acc+=dt;
+            while(acc>=INTERVAL_MS){ spawnWord(GALAU[idxText], innerWidth/2, innerHeight-44, {dur:8.0}); idxText=(idxText+1)%GALAU.length; acc-=INTERVAL_MS; }
             requestAnimationFrame(loopMaint);
-            return;
-          }
-          const dt = now - lastTime;
-          lastTime = now;
-          acc += dt;
-
-          while (acc >= INTERVAL_MS) {
-            spawnWord(GALAU[idxText], innerWidth / 2, innerHeight - 44, {
-              dur: 8.0,
-            });
-            idxText = (idxText + 1) % GALAU.length;
-            acc -= INTERVAL_MS;
           }
           requestAnimationFrame(loopMaint);
-        }
-        requestAnimationFrame(loopMaint);
-
-        document.addEventListener("visibilitychange", () => {
-          if (document.hidden) {
-            running = false;
-            acc = 0;
-          } else {
-            running = true;
-            lastTime = performance.now();
-          }
-        });
-      } else {
-        // === Mode normal (tanpa maintenance) tetap sama ===
-        maintText.style.display = "none";
-        nav.style.display = "flex";
-        audio.src = "monolog.mp3";
-
-        const TEXTS = [
-          "From Nana Wartana",
-          "I’ll try to make you believe in men again",
-          "Always be my favorite notification",
-          "Kamu versi terbaik dari mimpiku",
-          "Hmmmmm",
-          "Hahahahahahahaha",
-          "Apakah Semesta merestui kita😁",
-          "To Salsabilla Lutfiah Rifdah",
-          "Salbrut",
-          "Caca Cantik",
-          "Curug Muara Jaya Let's go?",
-          "Sudah siap ngalahin aku funrun?",
-          "Aku rajin cuci sepatu kok",
-          "Aku mandi 2x sehari",
-          "Dasternya minjem lagi, rabu main lagi, semoga kalah lagi",
-          "Aku orangnya gaje dan random kalo ke orang deket",
-          "Musik nyala gak?",
-        ];
-
-        const HEARTS_PER_SEC = 16;
-        const WORDS_PER_SEC = 1;
-        const TAP_HINT_EVERY = 2000;
-
-        let hasStarted = false,
-          running = true;
-        let accHeart = 0,
-          accWord = 0,
-          lastTime = performance.now();
-        let hintTimer = 0;
-
-        field.addEventListener(
-          "click",
-          () => {
-            if (hasStarted) return;
-            hasStarted = true;
-            audio.muted = false;
-            audio.play().catch(() => {});
-          },
-          { once: true }
-        );
-
-        function loopNormal(now) {
-          if (!running) {
-            lastTime = now;
+          document.addEventListener("visibilitychange",()=>{ if(document.hidden){ running=false; acc=0; } else { running=true; lastTime=performance.now(); }});
+        } else {
+          maintText.style.display="none"; nav.style.display="flex"; audio.src="monolog.mp3";
+          const TEXTS=["From Nana Wartana","I’ll try to make you believe in men again","Musik nyala gak?"];
+          const HEARTS_PER_SEC=16, WORDS_PER_SEC=1, TAP_HINT_EVERY=2000;
+          let hasStarted=false, running=true, accHeart=0, accWord=0, lastTime=performance.now(), hintTimer=0;
+          field.addEventListener("click",()=>{ if(hasStarted) return; hasStarted=true; audio.muted=false; audio.play().catch(()=>{}); }, {once:true});
+          function loopNormal(now){
+            if(!running){ lastTime=now; requestAnimationFrame(loopNormal); return; }
+            const dt=Math.min(0.05,(now-lastTime)/1000); lastTime=now;
+            accHeart+=dt*HEARTS_PER_SEC; while(accHeart>=1){ const x=rnd(innerWidth*.2, innerWidth*.8), y=innerHeight-24; spawnHeart(x,y,1); accHeart-=1; }
+            if(!hasStarted){ hintTimer+=dt*1000; if(hintTimer>=TAP_HINT_EVERY){ spawnWord("Tap layar 1x caaaaaaa!!", innerWidth/2, innerHeight-44); hintTimer=0; } }
+            if(hasStarted){ accWord+=dt*WORDS_PER_SEC; while(accWord>=1){ const x=rnd(innerWidth*.25, innerWidth*.75), y=innerHeight-44; spawnWord(pick(TEXTS), x, y); accWord-=1; } }
             requestAnimationFrame(loopNormal);
-            return;
-          }
-          const dt = Math.min(0.05, (now - lastTime) / 1000);
-          lastTime = now;
-
-          accHeart += dt * HEARTS_PER_SEC;
-          while (accHeart >= 1) {
-            const x = rnd(innerWidth * 0.2, innerWidth * 0.8),
-              y = innerHeight - 24;
-            spawnHeart(x, y, 1);
-            accHeart -= 1;
-          }
-
-          if (!hasStarted) {
-            hintTimer += dt * 1000;
-            if (hintTimer >= TAP_HINT_EVERY) {
-              spawnWord(
-                "Tap layar 1x caaaaaaa!!",
-                innerWidth / 2,
-                innerHeight - 44
-              );
-              hintTimer = 0;
-            }
-          }
-
-          if (hasStarted) {
-            accWord += dt * WORDS_PER_SEC;
-            while (accWord >= 1) {
-              const x = rnd(innerWidth * 0.25, innerWidth * 0.75),
-                y = innerHeight - 44;
-              spawnWord(pick(TEXTS), x, y);
-              accWord -= 1;
-            }
           }
           requestAnimationFrame(loopNormal);
+          document.addEventListener("visibilitychange",()=>{ if(document.hidden){ running=false; accHeart=0; accWord=0; hintTimer=0; } else { running=true; lastTime=performance.now(); }});
         }
-        requestAnimationFrame(loopNormal);
+      }
 
-        document.addEventListener("visibilitychange", () => {
-          if (document.hidden) {
-            running = false;
-            accHeart = 0;
-            accWord = 0;
-            hintTimer = 0;
-          } else {
-            running = true;
-            lastTime = performance.now();
+      /* ===== MODE 2: Slider IG-like ===== */
+      let current = 0;
+      let hasSwipedOnce = false;
+      let isDragging = false, startX = 0, baseTx = 0;
+      function vw(){ return window.innerWidth || document.documentElement.clientWidth; }
+
+      function createSlideEl(src){
+        const wrap=document.createElement("div"); wrap.className="slide";
+        if (/\.(mp4|webm|ogg)$/i.test(src)) {
+          const v=document.createElement("video");
+          v.src=src; v.muted=true; v.loop=true; v.playsInline=true; v.preload="metadata"; v.controls=false;
+          wrap.appendChild(v);
+        } else {
+          const img=document.createElement("img");
+          img.src=src; img.loading="lazy"; img.decoding="async"; img.draggable=false;
+          wrap.appendChild(img);
+        }
+        return wrap;
+      }
+
+      function setActiveMediaPlayback(index){
+        slidesEl.querySelectorAll("video").forEach(v=>{ v.pause(); v.currentTime=0; });
+        const active=slidesEl.children[index]; if(!active) return;
+        const vid=active.querySelector("video"); if(vid) { vid.play().catch(()=>{}); }
+      }
+
+      function renderDots(){
+        dotsEl.innerHTML=""; MEDIA_LIST.forEach((_,i)=>{ const d=document.createElement("div"); d.className="dot"+(i===current?" active":""); d.addEventListener("click",()=>goTo(i)); dotsEl.appendChild(d); });
+      }
+      function updateDots(){ dotsEl.querySelectorAll(".dot").forEach((d,i)=> d.classList.toggle("active", i===current)); }
+
+      function applyTransformPx(px){ slidesEl.style.transform = `translate3d(${px}px,0,0)`; }
+
+      function goTo(i, withAnim=true){
+        current = Math.max(0, Math.min(MEDIA_LIST.length-1, i));
+        slidesEl.style.transition = withAnim ? "transform 420ms ease" : "none";
+        const tx = -current * vw();
+        applyTransformPx(tx); updateDots(); setActiveMediaPlayback(current);
+      }
+
+      function next(){ goTo(current+1); }
+      function prev(){ goTo(current-1); }
+
+      function attachDragSwipe(){
+        let pointerId = null;
+        const threshold = () => Math.max(60, vw()*0.12);
+
+        const onDown = (e) => {
+          // hanya tombol kiri jika mouse
+          if (e.pointerType === "mouse" && e.button !== 0) return;
+          pointerId = e.pointerId;
+          try { slidesEl.setPointerCapture(pointerId); } catch {}
+          isDragging = true; startX = e.clientX; baseTx = -current * vw();
+          slidesEl.style.transition = "none";
+          document.body.classList.add("dragging"); sliderWrap.classList.add("dragging"); slidesEl.classList.add("dragging");
+          // cegah selection di desktop
+          if (e.pointerType === "mouse") e.preventDefault();
+        };
+
+        const onMove = (e) => {
+          if (!isDragging || e.pointerId !== pointerId) return;
+          // cegah highlight/select
+          e.preventDefault();
+          const dx = e.clientX - startX;
+
+          const maxLeft  = 0;
+          const maxRight = -(MEDIA_LIST.length - 1) * vw();
+          let tx = baseTx + dx;
+
+          // elastisitas kecil + clamp
+          const slack = vw() * 0.12;
+          if (tx > maxLeft + slack)  tx = maxLeft + slack;
+          if (tx < maxRight - slack) tx = maxRight - slack;
+
+          applyTransformPx(tx);
+        };
+
+        const endDrag = (e) => {
+          if (!isDragging || (pointerId !== null && e.pointerId !== pointerId)) return;
+          try { slidesEl.releasePointerCapture(pointerId); } catch {}
+          pointerId = null;
+
+          const dx = e.clientX - startX;
+          isDragging = false;
+
+          document.body.classList.remove("dragging"); sliderWrap.classList.remove("dragging"); slidesEl.classList.remove("dragging");
+
+          // putar musik saat swipe pertama bermakna
+          if (!hasSwipedOnce && Math.abs(dx) > 20) {
+            hasSwipedOnce = true; audio.src = "Berdua Saja Rahasia.mp3"; fadeInAudio(audio, 1200);
+          }
+
+          // ARAH YANG DIHARAPKAN:
+          // geser KE KANAN (dx > 0)  => ke media sebelah KIRI (prev)
+          // geser KE KIRI  (dx < 0)  => ke media sebelah KANAN (next)
+          if (dx > threshold())      prev();
+          else if (dx < -threshold()) next();
+          else                        goTo(current);
+        };
+
+        slidesEl.addEventListener("pointerdown", onDown);
+        slidesEl.addEventListener("pointermove", onMove);
+        slidesEl.addEventListener("pointerup", endDrag);
+        slidesEl.addEventListener("pointercancel", endDrag);
+        slidesEl.addEventListener("lostpointercapture", () => {
+          if (isDragging) {
+            isDragging = false;
+            document.body.classList.remove("dragging"); sliderWrap.classList.remove("dragging"); slidesEl.classList.remove("dragging");
+            goTo(current);
           }
         });
+        slidesEl.addEventListener("contextmenu", e => e.preventDefault());
+
+        // Backup kalau jendela blur saat drag
+        window.addEventListener("blur", () => {
+          if (isDragging) {
+            isDragging = false;
+            try { if (pointerId != null) slidesEl.releasePointerCapture(pointerId); } catch {}
+            pointerId = null;
+            document.body.classList.remove("dragging"); sliderWrap.classList.remove("dragging"); slidesEl.classList.remove("dragging");
+            goTo(current, false);
+          }
+        });
+
+        // Keyboard (desktop) — sesuai konvensi: ← prev, → next
+        window.addEventListener("keydown", (e) => {
+          if (e.key === "ArrowRight") { if (!hasSwipedOnce){ hasSwipedOnce=true; audio.src="Berdua Saja Rahasia.mp3"; fadeInAudio(audio,1200);} next(); }
+          if (e.key === "ArrowLeft")  { if (!hasSwipedOnce){ hasSwipedOnce=true; audio.src="Berdua Saja Rahasia.mp3"; fadeInAudio(audio,1200);} prev(); }
+        });
       }
+
+      function layoutSlides(){
+        [...slidesEl.children].forEach(sl=>{
+          sl.style.width = `${vw()}px`;
+          sl.style.height = `${window.innerHeight}px`;
+        });
+        goTo(current, false);
+      }
+
+      function initMode2(){
+        sliderWrap.style.display = "grid";
+        nav.style.display = "none";
+        maintText.style.display = "none";
+        field.style.display = "none";
+
+        // Render slides
+        slidesEl.innerHTML = "";
+        MEDIA_LIST.forEach(src => slidesEl.appendChild(createSlideEl(src)));
+        renderDots();
+
+        attachDragSwipe();
+
+        current = 0;
+        layoutSlides();
+        setActiveMediaPlayback(0);
+
+        // Re-layout saat resize/orientasi
+        window.addEventListener("resize", layoutSlides);
+
+        // Pause video saat tab disembunyikan
+        document.addEventListener("visibilitychange", () => {
+          if (document.hidden) { slidesEl.querySelectorAll("video").forEach(v=>v.pause()); }
+          else { setActiveMediaPlayback(current); }
+        });
+      }
+
+      /* =========================
+         BOOTSTRAP
+      ==========================*/
+      if (MODE === 1) runMode1();
+      else if (MODE === 2) initMode2();
+
+      // Spotlight bg mengikuti mouse
+      document.addEventListener("mousemove", (e) => {
+        document.body.style.setProperty("--mx", (e.clientX/innerWidth)*100+"%");
+        document.body.style.setProperty("--my", (e.clientY/innerHeight)*100+"%");
+      });
     </script>
   </body>
 </html>
