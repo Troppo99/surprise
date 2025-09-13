@@ -353,7 +353,7 @@
           requestAnimationFrame(loopMaint);
           document.addEventListener("visibilitychange",()=>{ if(document.hidden){ running=false; acc=0; } else { running=true; lastTime=performance.now(); }});
         } else {
-          maintText.style.display="none"; nav.style.display="flex"; audio.src="monolog.mp3";
+          maintText.style.display="none"; nav.style.display="flex"; audio.src="Naif.mp3";
           const TEXTS=["From Nana Wartana","I’ll try to make you believe in men again","Musik nyala gak?"];
           const HEARTS_PER_SEC=16, WORDS_PER_SEC=1, TAP_HINT_EVERY=2000;
           let hasStarted=false, running=true, accHeart=0, accWord=0, lastTime=performance.now(), hintTimer=0;
