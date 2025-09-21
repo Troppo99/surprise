@@ -140,29 +140,30 @@
       }
       /* Bingkai neon berdenyut */
       .neon-frame::before{
-        content:""; position:absolute; inset: clamp(6px,1.2vw,16px);
-        border-radius: 24px;
-        background:
-          conic-gradient(from var(--ang,0deg),
-            hsl(320 100% 60%/.9), hsl(255 100% 60%/.9), hsl(200 100% 60%/.9),
-            hsl(150 100% 60%/.9), hsl(320 100% 60%/.9));
-        filter: blur(18px);
-        opacity:.55; animation: spin 8s linear infinite;
-        z-index:2; pointer-events:none;
+        /* semula fixed */
+        filter: blur(calc(8px + 16px * var(--fig-k, 1)));
+        opacity: calc(0.18 + 0.37 * var(--fig-k, 1));
       }
       @keyframes spin { to { --ang:360deg; } }
 
       /* Vignette + scanline halus */
       .fx-top{
-        position:absolute; inset:0; pointer-events:none; z-index:3;
         background:
-          radial-gradient(120% 120% at 50% 50%, transparent 55%, rgba(0,0,0,.28) 80%),
-          repeating-linear-gradient(0deg, transparent 0 2px, rgba(255,255,255,.03) 3px 3.6px);
+          radial-gradient(120% 120% at 50% 50%,
+            transparent 55%,
+            rgba(0,0,0, calc(0.10 + 0.18 * var(--fig-k, 1))) 80%),
+          repeating-linear-gradient(0deg,
+            transparent 0 calc(2.4px + 1.2px * var(--fig-k, 1)),
+            rgba(255,255,255, calc(0.01 + 0.02 * var(--fig-k, 1)))
+            calc(3.0px + 1.0px * var(--fig-k, 1)) calc(3.6px + 1.2px * var(--fig-k, 1)));
       }
 
       /* Hint tap */
       .hud-hint{
-        position:absolute; bottom: 26px; left:50%; transform: translateX(-50%);
+        position:absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);  /* center horizontal & vertical */
         color:#fff; font-weight:800; letter-spacing:.4px; font-size:16px;
         padding:10px 14px; border-radius:999px;
         background: hsl(0 0% 100%/.14); backdrop-filter: blur(8px);
@@ -215,6 +216,8 @@
     </div>
 
     <script>
+      // 0.0 = tipis, 1.0 = default/tebal
+      const FIG_INTENSITY = 0.35;   // ganti ke 0.2 (sangat tipis) – 0.6 (sedang) – 1.0 (tebal)
       /* =========================
          KONFIGURASI
       ==========================*/
@@ -315,6 +318,7 @@
       const video3 = document.getElementById("video3");
       const canvas3 = document.getElementById("canvas3");
       const stage3 = document.getElementById("stage3");
+      stage3.style.setProperty("--fig-k", FIG_INTENSITY);
       const hint3 = document.getElementById("hint3");
 
       function fadeInAudio(el, duration = 1800) {
@@ -578,6 +582,12 @@
 
       /* ===== MODE 3: Video Nabilla + Canvas Figura ===== */
       function initMode3(){
+        const K = FIG_INTENSITY;
+
+        // gunakan K untuk “menipiskan” efek
+        const MAX_PART = Math.round(40 + 80 * K);          // 40..120
+        const HEART_SPAWN_P = 0.08 + 0.27 * K;             // 0.08..0.35
+        const BOKEH_FREQ_SCALE = 0.4 + 0.6 * K;            // 0.4..1.0
         // Matikan audio latar jika ada
         try { if (!audio.paused) fadeOutAudio(audio, 400); } catch {}
         nav.style.display = "none";
@@ -612,14 +622,14 @@
               kind:"heart",
               x: rnd(w*0.15,w*0.85), y: h+20,
               vx: rnd(-0.2,0.2), vy: rnd(-0.9,-0.4),
-              size: rnd(12,22), life: rnd(2.4,4.2), t:0, hue: rnd(330,360)
+              size: rnd(8, 12 + 10 * K), life: rnd(1.8, 2.6 + 1.6 * K), t:0, hue: rnd(330,360)
             });
           } else {
             particles.push({
               kind:"bokeh",
               x: rnd(-50,w+50), y: rnd(-20,h*0.85),
               vx: rnd(-0.05,0.05), vy: rnd(-0.02,0.02),
-              r: rnd(10,40), life: rnd(3,6), t:0, alpha: rnd(0.08,0.18), hue: rnd(180,320)
+              r: rnd(8, 20 + 20 * K), life: rnd(3,6), t:0, alpha: rnd(0.04, 0.10 + 0.08 * K), hue: rnd(180,320)
             });
           }
           if (particles.length > 300) particles = particles.slice(-300);
@@ -634,9 +644,10 @@
           ctx.clearRect(0,0,w,h);
 
           if (playing){
-            // densitas naik saat bermain
-            if (particles.length < MAX_PART) spawnParticle("bokeh");
-            if (Math.random() < 0.35) spawnParticle("heart");
+            if (particles.length < MAX_PART && Math.random() < (0.6 * BOKEH_FREQ_SCALE))
+              spawnParticle("bokeh");
+            if (Math.random() < HEART_SPAWN_P)
+              spawnParticle("heart");
           }
 
           // glow dasar
@@ -685,7 +696,7 @@
               ctx.bezierCurveTo(-36,-22, -12,-28, 0,-12);
               ctx.closePath();
               ctx.shadowColor = `hsla(${p.hue},100%,60%,0.6)`;
-              ctx.shadowBlur = 16;
+              ctx.shadowBlur = 6 + 10 * K;  // 6..16
               ctx.fill();
               ctx.restore();
             }
