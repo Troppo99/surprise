@@ -140,23 +140,35 @@
       }
       /* Bingkai neon berdenyut */
       .neon-frame::before{
-        /* semula fixed */
-        filter: blur(calc(8px + 16px * var(--fig-k, 1)));
-        opacity: calc(0.18 + 0.37 * var(--fig-k, 1));
-      }
+          content:"";
+          position:absolute; inset: clamp(6px,1.2vw,16px);
+          border-radius: 24px;
+          background:
+            conic-gradient(from var(--ang,0deg),
+              hsl(320 100% 60%/.9), hsl(255 100% 60%/.9),
+              hsl(200 100% 60%/.9), hsl(150 100% 60%/.9),
+              hsl(320 100% 60%/.9));
+          filter: blur(calc(8px + 16px * var(--fig-k, 1)));
+          opacity: calc(0.18 + 0.37 * var(--fig-k, 1));
+          animation: spin 8s linear infinite;
+          z-index:2; pointer-events:none;
+        }
+
       @keyframes spin { to { --ang:360deg; } }
 
       /* Vignette + scanline halus */
       .fx-top{
-        background:
-          radial-gradient(120% 120% at 50% 50%,
-            transparent 55%,
-            rgba(0,0,0, calc(0.10 + 0.18 * var(--fig-k, 1))) 80%),
-          repeating-linear-gradient(0deg,
-            transparent 0 calc(2.4px + 1.2px * var(--fig-k, 1)),
-            rgba(255,255,255, calc(0.01 + 0.02 * var(--fig-k, 1)))
-            calc(3.0px + 1.0px * var(--fig-k, 1)) calc(3.6px + 1.2px * var(--fig-k, 1)));
-      }
+          position:absolute; inset:0; pointer-events:none; z-index:3;
+          background:
+            radial-gradient(120% 120% at 50% 50%,
+              transparent 55%,
+              rgba(0,0,0, calc(0.10 + 0.18 * var(--fig-k, 1))) 80%),
+            repeating-linear-gradient(0deg,
+              transparent 0 calc(2.4px + 1.2px * var(--fig-k, 1)),
+              rgba(255,255,255, calc(0.01 + 0.02 * var(--fig-k, 1)))
+              calc(3.0px + 1.0px * var(--fig-k, 1)) calc(3.6px + 1.2px * var(--fig-k, 1)));
+        }
+
 
       /* Hint tap */
       .hud-hint{
@@ -613,7 +625,7 @@
         // Efek partikel/bokeh + percikan hati
         const ctx = canvas3.getContext("2d");
         let particles = [];
-        const MAX_PART = 120;
+        // const MAX_PART = 120;
 
         function spawnParticle(type){
           const w = canvas3.width, h = canvas3.height;
