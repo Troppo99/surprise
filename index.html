@@ -90,7 +90,7 @@
         display: flex; height: 100%;
         will-change: transform;
         transition: transform 420ms ease;
-        touch-action: pan-y; /* biar scroll vertikal tetap jalan */
+        touch-action: pan-y;
         cursor: grab;
       }
       .slide {
@@ -118,15 +118,58 @@
       .arrow:hover { background: hsl(0 0% 100%/.25); }
       .arrow.left { left: 12px; }
       .arrow.right { right: 12px; }
-
-      /* Panah hanya di desktop (pointer fine) */
       .arrow { display: none; }
       @media (hover:hover) and (pointer:fine) { .arrow { display: inline-block; } }
 
-      /* Saat drag aktif, hindari text selection */
       body.dragging, .slider-wrap.dragging, .slides.dragging, .slide.dragging {
         user-select: none; cursor: grabbing;
       }
+
+      /* ===== MODE 3: Fullscreen Video + Figura ===== */
+      .mode3-wrap{
+        position: fixed; inset: 0; z-index: 250; display: none; place-items: center; background: #000;
+      }
+      .mode3-stage{
+        position: relative; width: 100vw; height: 100vh; overflow: hidden; display: grid; place-items: center;
+      }
+      #video3{
+        width: 100vw; height: 100vh; object-fit: contain; background:#000; outline: none;
+      }
+      #canvas3{
+        position: absolute; inset: 0; pointer-events: none; mix-blend-mode: screen;
+      }
+      /* Bingkai neon berdenyut */
+      .neon-frame::before{
+        content:""; position:absolute; inset: clamp(6px,1.2vw,16px);
+        border-radius: 24px;
+        background:
+          conic-gradient(from var(--ang,0deg),
+            hsl(320 100% 60%/.9), hsl(255 100% 60%/.9), hsl(200 100% 60%/.9),
+            hsl(150 100% 60%/.9), hsl(320 100% 60%/.9));
+        filter: blur(18px);
+        opacity:.55; animation: spin 8s linear infinite;
+        z-index:2; pointer-events:none;
+      }
+      @keyframes spin { to { --ang:360deg; } }
+
+      /* Vignette + scanline halus */
+      .fx-top{
+        position:absolute; inset:0; pointer-events:none; z-index:3;
+        background:
+          radial-gradient(120% 120% at 50% 50%, transparent 55%, rgba(0,0,0,.28) 80%),
+          repeating-linear-gradient(0deg, transparent 0 2px, rgba(255,255,255,.03) 3px 3.6px);
+      }
+
+      /* Hint tap */
+      .hud-hint{
+        position:absolute; bottom: 26px; left:50%; transform: translateX(-50%);
+        color:#fff; font-weight:800; letter-spacing:.4px; font-size:16px;
+        padding:10px 14px; border-radius:999px;
+        background: hsl(0 0% 100%/.14); backdrop-filter: blur(8px);
+        box-shadow: 0 8px 30px rgba(0,0,0,.35); z-index:4;
+        animation: pop 1.2s ease infinite alternate;
+      }
+      @keyframes pop { to { transform: translateX(-50%) scale(1.06); } }
     </style>
   </head>
   <body>
@@ -159,88 +202,93 @@
           <div class="dots" id="dots"></div>
         </div>
       </div>
+
+      <!-- MODE 3: Video Nabilla + Figura -->
+      <div id="mode3Wrap" class="mode3-wrap" aria-hidden="true" style="display:none;">
+        <div class="mode3-stage neon-frame" id="stage3">
+          <video id="video3" playsinline webkit-playsinline preload="metadata"></video>
+          <canvas id="canvas3"></canvas>
+          <div id="fxTop" class="fx-top"></div>
+          <div id="hint3" class="hud-hint">tap 1x caaa baru video berjalan</div>
+        </div>
+      </div>
     </div>
 
     <script>
       /* =========================
          KONFIGURASI
       ==========================*/
-      const MODE = 1;            // 1 = tampilan lama, 2 = IG-like feed
+      const MODE = 3;            // 1 = tampilan lama, 2 = IG-like feed, 3 = Video Nabilla + Figura
       const MAINTENANCE = false; // dipakai saat MODE === 1
 
       // Media untuk MODE 2 (campur gambar & video)
       const MEDIA_LIST = [
-  "media/ba045616-5fd6-445a-a395-a80be5b9af0b.mp4",
-  //"media/IMG_1889.PNG",
-  "media/IMG_1842.JPG",
-  "media/IMG_1471.JPG",
-  "media/v14044g50000d2kop9fog65obsojp170.mp4",
-  "media/IMG_1714.mp4",
-  "media/IMG_1526.mp4",
-//  "media/IMG_2345.mp4",
-  "media/IMG_1524.mp4",
-  "media/IMG_1893.mp4",
-//  "media/IMG_2351.mp4",
-  "media/IMG_2371.mp4",
-  "media/IMG_2428.mp4",
-  "media/IMG_2429.mp4",
-  "media/IMG_2378.mp4",
-  "media/IMG_2430.mp4",
-  //"media/IMG_2346.mp4",
-  "media/IMG_1516.mp4",
-  "media/IMG_0450.jpg",
-  "media/IMG_0455.jpg",
-  "media/IMG_0457.jpg",
-  "media/IMG_1427.jpg",
-  "media/IMG_1433.jpg",
-  "media/IMG_1438.jpg",
-  "media/IMG_1443.jpg",
-  "media/IMG_1449.jpg",
-  "media/IMG_1477.jpg",
-  "media/IMG_1486.jpg",
-  "media/IMG_1487.jpg",
-  "media/IMG_1492.jpg",
-  "media/IMG_1495.jpg",
-  "media/IMG_1497.jpg",
-  "media/IMG_1498.jpg",
-  "media/IMG_1500.jpg",
-  "media/IMG_1515.jpg",
-  "media/IMG_1530.jpg",
-  "media/IMG_1706.jpg",
-  "media/IMG_1710.jpg",
-  "media/IMG_1713.jpg",
-  "media/IMG_1729.jpg",
-  "media/IMG_1730.jpg",
-  "media/IMG_1733.jpg",
-  "media/IMG_1734.jpg",
-  "media/IMG_1768.jpg",
-  "media/IMG_1774.jpg",
-  "media/IMG_1991.jpg",
-  "media/IMG_1992.jpg",
-  "media/IMG_2199.jpg",
-  "media/IMG_2200.jpg",
-  "media/IMG_2213.jpg",
-  "media/IMG_2218.jpg",
-  "media/IMG_2331.jpg",
-  "media/IMG_2337.jpg",
-  "media/IMG_2349.jpg",
-  "media/IMG_2366.jpg",
-  "media/IMG_2367.jpg",
-  "media/IMG_2368.jpg",
-  "media/IMG_2369.jpg",
-  "media/IMG_2370.jpg",
-  "media/IMG_2375.jpg",
-  "media/IMG_2376.jpg",
-  "media/IMG_2377.jpg",
-  "media/IMG_2406.jpg",
-  "media/IMG_2407.jpg",
-  "media/IMG_2423.jpg",
-  "media/IMG_2424.jpg",
-  "media/IMG_2425.jpg",
-  "media/IMG_2426.jpg",
-  "media/IMG_2427.jpg",
-];
-
+        "media/ba045616-5fd6-445a-a395-a80be5b9af0b.mp4",
+        "media/IMG_1842.JPG",
+        "media/IMG_1471.JPG",
+        "media/v14044g50000d2kop9fog65obsojp170.mp4",
+        "media/IMG_1714.mp4",
+        "media/IMG_1526.mp4",
+        "media/IMG_1524.mp4",
+        "media/IMG_1893.mp4",
+        "media/IMG_2371.mp4",
+        "media/IMG_2428.mp4",
+        "media/IMG_2429.mp4",
+        "media/IMG_2378.mp4",
+        "media/IMG_2430.mp4",
+        "media/IMG_1516.mp4",
+        "media/IMG_0450.jpg",
+        "media/IMG_0455.jpg",
+        "media/IMG_0457.jpg",
+        "media/IMG_1427.jpg",
+        "media/IMG_1433.jpg",
+        "media/IMG_1438.jpg",
+        "media/IMG_1443.jpg",
+        "media/IMG_1449.jpg",
+        "media/IMG_1477.jpg",
+        "media/IMG_1486.jpg",
+        "media/IMG_1487.jpg",
+        "media/IMG_1492.jpg",
+        "media/IMG_1495.jpg",
+        "media/IMG_1497.jpg",
+        "media/IMG_1498.jpg",
+        "media/IMG_1500.jpg",
+        "media/IMG_1515.jpg",
+        "media/IMG_1530.jpg",
+        "media/IMG_1706.jpg",
+        "media/IMG_1710.jpg",
+        "media/IMG_1713.jpg",
+        "media/IMG_1729.jpg",
+        "media/IMG_1730.jpg",
+        "media/IMG_1733.jpg",
+        "media/IMG_1734.jpg",
+        "media/IMG_1768.jpg",
+        "media/IMG_1774.jpg",
+        "media/IMG_1991.jpg",
+        "media/IMG_1992.jpg",
+        "media/IMG_2199.jpg",
+        "media/IMG_2200.jpg",
+        "media/IMG_2213.jpg",
+        "media/IMG_2218.jpg",
+        "media/IMG_2331.jpg",
+        "media/IMG_2337.jpg",
+        "media/IMG_2349.jpg",
+        "media/IMG_2366.jpg",
+        "media/IMG_2367.jpg",
+        "media/IMG_2368.jpg",
+        "media/IMG_2369.jpg",
+        "media/IMG_2370.jpg",
+        "media/IMG_2375.jpg",
+        "media/IMG_2376.jpg",
+        "media/IMG_2377.jpg",
+        "media/IMG_2406.jpg",
+        "media/IMG_2407.jpg",
+        "media/IMG_2423.jpg",
+        "media/IMG_2424.jpg",
+        "media/IMG_2425.jpg",
+        "media/IMG_2426.jpg",
+        "media/IMG_2427.jpg",
+      ];
 
       /* =========================
          UTIL
@@ -262,6 +310,13 @@
       const btnPrev = document.getElementById("btnPrev");
       const btnNext = document.getElementById("btnNext");
 
+      // MODE 3 refs
+      const mode3Wrap = document.getElementById("mode3Wrap");
+      const video3 = document.getElementById("video3");
+      const canvas3 = document.getElementById("canvas3");
+      const stage3 = document.getElementById("stage3");
+      const hint3 = document.getElementById("hint3");
+
       function fadeInAudio(el, duration = 1800) {
         el.volume = 0; el.muted = false;
         el.play().catch(()=>{});
@@ -278,7 +333,7 @@
         requestAnimationFrame(step);
       }
 
-      /* ===== Mode 1 (kode existing ringkas) ===== */
+      /* ===== Mode 1 (existing) ===== */
       function trumpetBurst(count = 24) {
         for (let i=0;i<count;i++){
           const x = rnd(innerWidth*.1, innerWidth*.9);
@@ -325,7 +380,7 @@
       function runMode1(){
         if (MAINTENANCE){
           nav.style.display="none"; maintText.style.display="block"; audio.src="tbdw.mp3";
-          const GALAU=[/* ... daftar teks ... */"Mau foto?, kirim 'MINTAFOTO#plis' di wa","aku lagi capek dan sakit hati sama perasaan ini","atau apa?"];
+          const GALAU=["Mau foto?, kirim 'MINTAFOTO#plis' di wa","aku lagi capek dan sakit hati sama perasaan ini","atau apa?"];
           const INTERVAL_MS=4000;
           let phase="idle", started=false, running=true, idxText=0, lastTime=performance.now(), acc=0;
           const IMAGE_LIST=["image1.png","image2.png","image3.png","image4.png","image5.png"]; let imgIndex=0;
@@ -419,32 +474,25 @@
         const threshold = () => Math.max(60, vw()*0.12);
 
         const onDown = (e) => {
-          // hanya tombol kiri jika mouse
           if (e.pointerType === "mouse" && e.button !== 0) return;
           pointerId = e.pointerId;
           try { slidesEl.setPointerCapture(pointerId); } catch {}
           isDragging = true; startX = e.clientX; baseTx = -current * vw();
           slidesEl.style.transition = "none";
           document.body.classList.add("dragging"); sliderWrap.classList.add("dragging"); slidesEl.classList.add("dragging");
-          // cegah selection di desktop
           if (e.pointerType === "mouse") e.preventDefault();
         };
 
         const onMove = (e) => {
           if (!isDragging || e.pointerId !== pointerId) return;
-          // cegah highlight/select
           e.preventDefault();
           const dx = e.clientX - startX;
-
           const maxLeft  = 0;
           const maxRight = -(MEDIA_LIST.length - 1) * vw();
           let tx = baseTx + dx;
-
-          // elastisitas kecil + clamp
           const slack = vw() * 0.12;
           if (tx > maxLeft + slack)  tx = maxLeft + slack;
           if (tx < maxRight - slack) tx = maxRight - slack;
-
           applyTransformPx(tx);
         };
 
@@ -458,14 +506,10 @@
 
           document.body.classList.remove("dragging"); sliderWrap.classList.remove("dragging"); slidesEl.classList.remove("dragging");
 
-          // putar musik saat swipe pertama bermakna
           if (!hasSwipedOnce && Math.abs(dx) > 20) {
             hasSwipedOnce = true; audio.src = "Berdua Saja Rahasia.mp3"; fadeInAudio(audio, 1200);
           }
 
-          // ARAH YANG DIHARAPKAN:
-          // geser KE KANAN (dx > 0)  => ke media sebelah KIRI (prev)
-          // geser KE KIRI  (dx < 0)  => ke media sebelah KANAN (next)
           if (dx > threshold())      prev();
           else if (dx < -threshold()) next();
           else                        goTo(current);
@@ -479,12 +523,11 @@
           if (isDragging) {
             isDragging = false;
             document.body.classList.remove("dragging"); sliderWrap.classList.remove("dragging"); slidesEl.classList.remove("dragging");
-            goTo(current);
+            goTo(current, false);
           }
         });
         slidesEl.addEventListener("contextmenu", e => e.preventDefault());
 
-        // Backup kalau jendela blur saat drag
         window.addEventListener("blur", () => {
           if (isDragging) {
             isDragging = false;
@@ -495,7 +538,6 @@
           }
         });
 
-        // Keyboard (desktop) — sesuai konvensi: ← prev, → next
         window.addEventListener("keydown", (e) => {
           if (e.key === "ArrowRight") { if (!hasSwipedOnce){ hasSwipedOnce=true; audio.src="Berdua Saja Rahasia.mp3"; fadeInAudio(audio,1200);} next(); }
           if (e.key === "ArrowLeft")  { if (!hasSwipedOnce){ hasSwipedOnce=true; audio.src="Berdua Saja Rahasia.mp3"; fadeInAudio(audio,1200);} prev(); }
@@ -516,7 +558,6 @@
         maintText.style.display = "none";
         field.style.display = "none";
 
-        // Render slides
         slidesEl.innerHTML = "";
         MEDIA_LIST.forEach(src => slidesEl.appendChild(createSlideEl(src)));
         renderDots();
@@ -527,13 +568,162 @@
         layoutSlides();
         setActiveMediaPlayback(0);
 
-        // Re-layout saat resize/orientasi
         window.addEventListener("resize", layoutSlides);
 
-        // Pause video saat tab disembunyikan
         document.addEventListener("visibilitychange", () => {
           if (document.hidden) { slidesEl.querySelectorAll("video").forEach(v=>v.pause()); }
           else { setActiveMediaPlayback(current); }
+        });
+      }
+
+      /* ===== MODE 3: Video Nabilla + Canvas Figura ===== */
+      function initMode3(){
+        // Matikan audio latar jika ada
+        try { if (!audio.paused) fadeOutAudio(audio, 400); } catch {}
+        nav.style.display = "none";
+        maintText.style.display = "none";
+        field.style.display = "none";
+        sliderWrap.style.display = "none";
+
+        mode3Wrap.style.display = "grid";
+        video3.src = "IMG_2826.mp4";    // path videomu
+        video3.controls = false;       // biar clean
+        video3.muted = false;          // penting: gunakan tap untuk izin audio
+        video3.loop = false;           // kalau mau ulangi, set true
+        video3.playsInline = true;
+
+        // Ukuran canvas = viewport
+        function resizeCanvas(){
+          canvas3.width = stage3.clientWidth;
+          canvas3.height = stage3.clientHeight;
+        }
+        resizeCanvas();
+        window.addEventListener("resize", resizeCanvas);
+
+        // Efek partikel/bokeh + percikan hati
+        const ctx = canvas3.getContext("2d");
+        let particles = [];
+        const MAX_PART = 120;
+
+        function spawnParticle(type){
+          const w = canvas3.width, h = canvas3.height;
+          if (type === "heart"){
+            particles.push({
+              kind:"heart",
+              x: rnd(w*0.15,w*0.85), y: h+20,
+              vx: rnd(-0.2,0.2), vy: rnd(-0.9,-0.4),
+              size: rnd(12,22), life: rnd(2.4,4.2), t:0, hue: rnd(330,360)
+            });
+          } else {
+            particles.push({
+              kind:"bokeh",
+              x: rnd(-50,w+50), y: rnd(-20,h*0.85),
+              vx: rnd(-0.05,0.05), vy: rnd(-0.02,0.02),
+              r: rnd(10,40), life: rnd(3,6), t:0, alpha: rnd(0.08,0.18), hue: rnd(180,320)
+            });
+          }
+          if (particles.length > 300) particles = particles.slice(-300);
+        }
+
+        let playing = false;
+        let last = performance.now();
+
+        function draw(now){
+          const dt = Math.min(0.033,(now-last)/1000); last = now;
+          const w = canvas3.width, h = canvas3.height;
+          ctx.clearRect(0,0,w,h);
+
+          if (playing){
+            // densitas naik saat bermain
+            if (particles.length < MAX_PART) spawnParticle("bokeh");
+            if (Math.random() < 0.35) spawnParticle("heart");
+          }
+
+          // glow dasar
+          const grad = ctx.createRadialGradient(w*0.5,h*0.55,10,w*0.5,h*0.5,Math.max(w,h)*0.6);
+          grad.addColorStop(0,"rgba(255,255,255,0.02)");
+          grad.addColorStop(1,"rgba(0,0,0,0)");
+          ctx.fillStyle = grad;
+          ctx.fillRect(0,0,w,h);
+
+          // update & render partikel
+          for (let i=particles.length-1;i>=0;i--){
+            const p = particles[i];
+            p.t += dt;
+            if (p.t > p.life){ particles.splice(i,1); continue; }
+
+            if (p.kind === "bokeh"){
+              p.x += p.vx*(1+Math.sin(now*0.001+p.x)*0.2);
+              p.y += p.vy*(1+Math.cos(now*0.001+p.y)*0.2);
+              const a = p.alpha * (1 - p.t/p.life);
+              ctx.beginPath();
+              ctx.fillStyle = `hsla(${p.hue},100%,60%,${a})`;
+              ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+              ctx.fill();
+              // inner highlight
+              ctx.beginPath();
+              ctx.fillStyle = `hsla(${p.hue},100%,70%,${a*0.6})`;
+              ctx.arc(p.x- p.r*0.3,p.y- p.r*0.3,p.r*0.4,0,Math.PI*2);
+              ctx.fill();
+            } else {
+              // heart
+              p.x += p.vx;
+              p.y += p.vy*60*dt;
+              const k = (1 - p.t/p.life);
+              const s = p.size * (0.9 + 0.2*Math.sin(now*0.006+p.x));
+              ctx.save();
+              ctx.translate(p.x,p.y);
+              ctx.scale(s*0.08,s*0.08);
+              ctx.globalAlpha = Math.max(0,k);
+              ctx.fillStyle = `hsla(${p.hue},100%,60%,${0.85*k})`;
+              // path hati
+              ctx.beginPath();
+              ctx.moveTo(0,-12);
+              ctx.bezierCurveTo(12,-28, 36,-22, 36,-4);
+              ctx.bezierCurveTo(36,16, 18,28, 0,42);
+              ctx.bezierCurveTo(-18,28, -36,16, -36,-4);
+              ctx.bezierCurveTo(-36,-22, -12,-28, 0,-12);
+              ctx.closePath();
+              ctx.shadowColor = `hsla(${p.hue},100%,60%,0.6)`;
+              ctx.shadowBlur = 16;
+              ctx.fill();
+              ctx.restore();
+            }
+          }
+
+          requestAnimationFrame(draw);
+        }
+        requestAnimationFrame(draw);
+
+        // Mulai saat TAP 1x
+        const startOnce = () => {
+          hint3.style.display = "none";
+          // jaga-jaga: hentikan bgm kalau ada
+          try { audio.pause(); } catch {}
+          video3.muted = false;
+          const playPromise = video3.play();
+          playing = true;
+          if (playPromise) playPromise.catch(()=> {
+            // jika gagal (misal tak dianggap gesture), paksa dengan user tap berikutnya
+            hint3.style.display = "block";
+          });
+        };
+
+        // Tap/Click di mana saja pada stage memulai atau toggle pause/play
+        stage3.addEventListener("click", ()=>{
+          if (video3.paused) startOnce();
+          else video3.pause();
+        });
+
+        // Saat video selesai, munculkan hint agar bisa diputar lagi
+        video3.addEventListener("ended", ()=>{
+          playing = false;
+          hint3.style.display = "block";
+        });
+
+        // Saat tab disembunyikan, hentikan visual berat
+        document.addEventListener("visibilitychange", ()=>{
+          if (document.hidden){ playing = false; video3.pause(); }
         });
       }
 
@@ -542,6 +732,7 @@
       ==========================*/
       if (MODE === 1) runMode1();
       else if (MODE === 2) initMode2();
+      else if (MODE === 3) initMode3();
 
       // Spotlight bg mengikuti mouse
       document.addEventListener("mousemove", (e) => {
