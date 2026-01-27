@@ -10,11 +10,20 @@
     :root { --bg-a: 320 88% 54%; --bg-b: 255 88% 58%; }
     * { box-sizing: border-box; }
     html, body { height: 100%; }
+
     body {
       margin: 0;
       overflow: hidden;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
       background: #000;
+    }
+
+    /* ===== BLUR STATE ===== */
+    body.locked #bg,
+    body.locked #field,
+    body.locked .apology-wrap {
+      filter: blur(10px);
+      transition: filter .4s ease;
     }
 
     /* Background */
@@ -42,28 +51,19 @@
       user-select: none;
     }
 
-    .heart {
-      font-size: 26px;
-      text-shadow: 0 0 12px rgba(255,255,255,.8);
-    }
-
+    .heart { font-size: 26px; }
     .word {
       font-size: 20px;
       font-weight: 600;
       color: #fff;
-      text-shadow:
-        0 0 10px rgba(255,255,255,.8),
-        0 10px 30px rgba(0,0,0,.4);
+      text-shadow: 0 0 10px rgba(255,255,255,.8);
     }
 
     @keyframes float {
-      to {
-        transform: translate(-50%, -140vh);
-        opacity: 0;
-      }
+      to { transform: translate(-50%, -140vh); opacity: 0; }
     }
 
-    /* Apology Text */
+    /* Apology */
     .apology-wrap {
       position: fixed;
       inset: 0;
@@ -81,22 +81,13 @@
       letter-spacing: 1.5px;
       text-shadow:
         0 0 12px rgba(255,255,255,.8),
-        0 0 40px rgba(255,120,200,1),
-        0 20px 60px rgba(0,0,0,.6);
+        0 0 40px rgba(255,120,200,1);
       animation: glow 3s ease-in-out infinite alternate;
     }
 
-    .apology-sub {
-      margin-top: 18px;
-      font-size: clamp(16px, 2.4vw, 22px);
-      opacity: .85;
-      max-width: 90vw;
-      line-height: 1.6;
-    }
-
     @keyframes glow {
-      from { text-shadow: 0 0 10px rgba(255,255,255,.5); }
-      to   { text-shadow: 0 0 45px rgba(255,120,200,1); }
+      from { text-shadow: 0 0 10px rgba(255,255,255,.4); }
+      to { text-shadow: 0 0 45px rgba(255,120,200,1); }
     }
 
     .tap-hint {
@@ -110,28 +101,101 @@
       z-index: 10;
       animation: pulse 1.4s ease infinite alternate;
     }
-
     @keyframes pulse { to { opacity: 1; } }
+
+    /* ===== PIN OVERLAY ===== */
+    .pin-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      display: none;
+      place-items: center;
+      background: rgba(0,0,0,.45);
+      backdrop-filter: blur(6px);
+    }
+
+    .pin-box {
+      background: rgba(255,255,255,.12);
+      padding: 28px 24px;
+      border-radius: 18px;
+      text-align: center;
+      color: #fff;
+      width: 280px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.5);
+    }
+
+    .pin-box h2 {
+      margin: 0 0 12px;
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .pin-input {
+      width: 100%;
+      padding: 12px;
+      font-size: 20px;
+      text-align: center;
+      letter-spacing: 6px;
+      border-radius: 10px;
+      border: none;
+      outline: none;
+    }
+
+    .pin-error {
+      margin-top: 10px;
+      font-size: 13px;
+      color: #ffb3b3;
+      display: none;
+    }
+
+    .shake {
+      animation: shake .4s;
+    }
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      25% { transform: translateX(-6px); }
+      75% { transform: translateX(6px); }
+    }
   </style>
 </head>
 
-<body>
+<body class="locked">
   <div id="bg"></div>
   <div id="field"></div>
 
   <div class="apology-wrap">
-    <div>
-      <div class="apology-title">Apology Boy</div>
-    </div>
+    <div class="apology-title">Apology Boy</div>
   </div>
 
   <div class="tap-hint">tap 1x</div>
+
+  <!-- PIN -->
+  <div class="pin-overlay" id="pinOverlay">
+    <div class="pin-box" id="pinBox">
+      <h2>Masukkan kode 6 digit</h2>
+      <input
+        type="password"
+        maxlength="6"
+        inputmode="numeric"
+        class="pin-input"
+        id="pinInput"
+        placeholder="••••••"
+      />
+      <div class="pin-error" id="pinError">Kode salah</div>
+    </div>
+  </div>
 
   <audio id="bgm" src="Reka.mp3" loop muted></audio>
 
   <script>
     const field = document.getElementById("field");
     const audio = document.getElementById("bgm");
+    const pinOverlay = document.getElementById("pinOverlay");
+    const pinInput = document.getElementById("pinInput");
+    const pinError = document.getElementById("pinError");
+    const pinBox = document.getElementById("pinBox");
+
+    const CORRECT_PIN = "090202";
 
     function rnd(a,b){ return a + Math.random()*(b-a); }
 
@@ -158,25 +222,38 @@
     }
 
     const WORDS = [
-      "Apology boboiboy",
-      "Apology random boy",
-      "Apology beast boy",
-      "Apology yakult boy",
-      "Apology boy"
+      "Apology Boy",
+      "Aku minta maaf",
+      "Aku sadar aku salah"
     ];
 
     let i = 0;
-    setInterval(spawnHeart, 800);
-    setInterval(()=>{
-      spawnWord(WORDS[i % WORDS.length]);
-      i++;
-    }, 3200);
+    setInterval(spawnHeart, 900);
+    setInterval(()=>{ spawnWord(WORDS[i++ % WORDS.length]); }, 3400);
 
+    /* TAP */
     document.addEventListener("click", ()=>{
       audio.muted = false;
       audio.play().catch(()=>{});
       document.querySelector(".tap-hint").style.display = "none";
+      pinOverlay.style.display = "grid";
+      pinInput.focus();
     }, { once:true });
+
+    /* PIN CHECK */
+    pinInput.addEventListener("input", ()=>{
+      if(pinInput.value.length === 6){
+        if(pinInput.value === CORRECT_PIN){
+          document.body.classList.remove("locked");
+          pinOverlay.style.display = "none";
+        } else {
+          pinError.style.display = "block";
+          pinBox.classList.add("shake");
+          pinInput.value = "";
+          setTimeout(()=>pinBox.classList.remove("shake"), 400);
+        }
+      }
+    });
 
     document.addEventListener("mousemove", e=>{
       document.body.style.setProperty("--mx", e.clientX/innerWidth*100+"%");
