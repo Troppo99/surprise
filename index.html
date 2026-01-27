@@ -1,767 +1,192 @@
 <!DOCTYPE html>
 <html lang="id">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Surprise</title>
-    <meta name="robots" content="noindex, nofollow" />
-    <style>
-      :root { --bg-a: 320 88% 54%; --bg-b: 255 88% 58%; }
-      * { box-sizing: border-box; }
-      html, body { height: 100%; }
-      body {
-        margin: 0; overflow: hidden;
-        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
-        background: #000;
-      }
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Apology Boy</title>
+  <meta name="robots" content="noindex, nofollow" />
 
-      /* ===== BG anim (tetap) ===== */
-      #bg {
-        position: fixed; inset: 0; z-index: 0; pointer-events: none;
-        background:
-          radial-gradient(1000px 1000px at var(--mx,50%) var(--my,50%), hsl(0 0% 100%/.06), transparent 60%),
-          linear-gradient(135deg, hsl(var(--bg-a)), hsl(var(--bg-b)));
-        animation: bg-pan 18s linear infinite;
-      }
-      @keyframes bg-pan { 0% { filter: hue-rotate(0); } 100% { filter: hue-rotate(360deg); } }
+  <style>
+    :root { --bg-a: 320 88% 54%; --bg-b: 255 88% 58%; }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      overflow: hidden;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      background: #000;
+    }
 
-      #app { position: relative; z-index: 1; }
-      #field { position: fixed; inset: 0; }
+    /* Background */
+    #bg {
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(900px 900px at var(--mx,50%) var(--my,50%), rgba(255,255,255,.06), transparent 60%),
+        linear-gradient(135deg, hsl(var(--bg-a)), hsl(var(--bg-b)));
+      animation: hue 18s linear infinite;
+      z-index: 0;
+    }
+    @keyframes hue { to { filter: hue-rotate(360deg); } }
 
-      .heart, .word {
-        position: absolute; left: var(--left); top: var(--top);
-        transform: translate(-50%, -50%) scale(var(--scale)) rotate(var(--rot));
-        line-height: 1; user-select: none; pointer-events: none;
-        filter: drop-shadow(0 12px 24px hsl(0 0% 0%/.25)); opacity: .96;
-        animation: float var(--dur) linear forwards;
-      }
-      .heart {
-        font-size: var(--size); color: hsl(var(--h) 90% 62%);
-        text-shadow:
-          0 0 8px hsl(var(--h) 90% 62%/.75),
-          0 0 18px hsl(var(--h) 90% 62%/.45),
-          0 6px 18px hsl(var(--h) 50% 30%/.35);
-      }
-      .word {
-        font-size: var(--size); font-weight: 700; color: #fff; letter-spacing: .3px;
-        text-shadow: 0 0 10px hsl(0 0% 100%/.7), 0 10px 30px hsl(0 0% 0%/.35);
-      }
-      @keyframes float {
-        to {
-          transform: translate(calc(-50% + var(--dx)), calc(-50% - var(--dy))) scale(var(--scaleEnd)) rotate(var(--rotEnd));
-          opacity: 0;
-        }
-      }
+    #field { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
 
-      .nav-container { position: fixed; top: 16px; right: 16px; z-index: 50; display: none; gap: 10px; }
-      .nav-btn {
-        padding: 10px 14px; border: 0; border-radius: 999px; font-weight: 700; letter-spacing: .2px; cursor: pointer;
-        backdrop-filter: blur(6px); background: hsl(0 0% 100%/.18); color: #fff; box-shadow: 0 6px 20px hsl(0 0% 0%/.25);
-        text-decoration: none; display: inline-block; text-align: center;
+    /* Floating */
+    .heart, .word {
+      position: absolute;
+      left: var(--x);
+      top: var(--y);
+      transform: translate(-50%,-50%);
+      animation: float var(--dur) linear forwards;
+      opacity: .95;
+      user-select: none;
+    }
+
+    .heart {
+      font-size: 26px;
+      text-shadow: 0 0 12px rgba(255,255,255,.8);
+    }
+
+    .word {
+      font-size: 20px;
+      font-weight: 600;
+      color: #fff;
+      text-shadow:
+        0 0 10px rgba(255,255,255,.8),
+        0 10px 30px rgba(0,0,0,.4);
+    }
+
+    @keyframes float {
+      to {
+        transform: translate(-50%, -140vh);
+        opacity: 0;
       }
-      .nav-btn:hover { background: hsl(0 0% 100%/.28); }
+    }
 
-      .teks-pemeliharaan {
-        position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%);
-        font-size: 20px; color: #fff; text-align: center; padding: 10px 14px; border-radius: 12px;
-        background: hsl(0 0% 0%/.25); backdrop-filter: blur(4px); z-index: 100; pointer-events: none; display: block;
-      }
+    /* Apology Text */
+    .apology-wrap {
+      position: fixed;
+      inset: 0;
+      z-index: 5;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      pointer-events: none;
+    }
 
-      /* Overlay gambar mode 1 */
-      .image-overlay {
-        position: fixed; inset: 0; z-index: 300; display: grid; place-items: center;
-        background: #fff; opacity: 0; visibility: hidden; transition: opacity .35s ease, visibility .35s ease;
-        pointer-events: none;
-      }
-      .image-overlay.show { opacity: 1; visibility: visible; pointer-events: auto; }
-      .image-overlay img { max-width: 100vw; height: auto; width: auto; display: block; filter: none; }
+    .apology-title {
+      font-size: clamp(42px, 7vw, 90px);
+      font-weight: 900;
+      color: #fff;
+      letter-spacing: 1.5px;
+      text-shadow:
+        0 0 12px rgba(255,255,255,.8),
+        0 0 40px rgba(255,120,200,1),
+        0 20px 60px rgba(0,0,0,.6);
+      animation: glow 3s ease-in-out infinite alternate;
+    }
 
-      /* ===== MODE 2: Slider (overlay di atas BG) ===== */
-      .slider-wrap {
-        position: fixed; inset: 0; z-index: 200;
-        display: none; place-items: center;
-        background: transparent; pointer-events: auto;
-      }
-      .slider {
-        position: relative; width: 100vw; height: 100vh;
-        overflow: hidden; display: grid; place-items: center; background: transparent;
-      }
-      .slides {
-        display: flex; height: 100%;
-        will-change: transform;
-        transition: transform 420ms ease;
-        touch-action: pan-y;
-        cursor: grab;
-      }
-      .slide {
-        width: 100vw; height: 100vh;
-        display: grid; place-items: center; background: transparent;
-      }
-      .slide img, .slide video {
-        max-width: 100vw; max-height: 100vh;
-        width: auto; height: auto; object-fit: contain; display: block;
-        -webkit-user-drag: none; user-select: none;
-      }
+    .apology-sub {
+      margin-top: 18px;
+      font-size: clamp(16px, 2.4vw, 22px);
+      opacity: .85;
+      max-width: 90vw;
+      line-height: 1.6;
+    }
 
-      .dots {
-        position: absolute; bottom: 18px; left: 50%; transform: translateX(-50%);
-        display: flex; gap: 8px; z-index: 3;
-      }
-      .dot { width: 8px; height: 8px; border-radius: 999px; background: hsl(0 0% 100%/.35); transition: all .25s ease; }
-      .dot.active { width: 22px; background: #fff; }
+    @keyframes glow {
+      from { text-shadow: 0 0 10px rgba(255,255,255,.5); }
+      to   { text-shadow: 0 0 45px rgba(255,120,200,1); }
+    }
 
-      .arrow {
-        position: absolute; top: 50%; transform: translateY(-50%);
-        padding: 8px 12px; border-radius: 999px; border: 0;
-        background: hsl(0 0% 100%/.15); color: #fff; cursor: pointer; z-index: 3; backdrop-filter: blur(6px);
-      }
-      .arrow:hover { background: hsl(0 0% 100%/.25); }
-      .arrow.left { left: 12px; }
-      .arrow.right { right: 12px; }
-      .arrow { display: none; }
-      @media (hover:hover) and (pointer:fine) { .arrow { display: inline-block; } }
+    .tap-hint {
+      position: fixed;
+      bottom: 26px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 14px;
+      color: #fff;
+      opacity: .7;
+      z-index: 10;
+      animation: pulse 1.4s ease infinite alternate;
+    }
 
-      body.dragging, .slider-wrap.dragging, .slides.dragging, .slide.dragging {
-        user-select: none; cursor: grabbing;
-      }
+    @keyframes pulse { to { opacity: 1; } }
+  </style>
+</head>
 
-      /* ===== MODE 3: Fullscreen Video + Figura ===== */
-      .mode3-wrap{
-        position: fixed; inset: 0; z-index: 250; display: none; place-items: center; background: #000;
-      }
-      .mode3-stage{
-        position: relative; width: 100vw; height: 100vh; overflow: hidden; display: grid; place-items: center;
-      }
-      #video3{
-        width: 100vw; height: 100vh; object-fit: contain; background:#000; outline: none;
-      }
-      #canvas3{
-        position: absolute; inset: 0; pointer-events: none; mix-blend-mode: screen;
-      }
-      /* Bingkai neon berdenyut */
-      .neon-frame::before{
-          content:"";
-          position:absolute; inset: clamp(6px,1.2vw,16px);
-          border-radius: 24px;
-          background:
-            conic-gradient(from var(--ang,0deg),
-              hsl(320 100% 60%/.9), hsl(255 100% 60%/.9),
-              hsl(200 100% 60%/.9), hsl(150 100% 60%/.9),
-              hsl(320 100% 60%/.9));
-          filter: blur(calc(8px + 16px * var(--fig-k, 1)));
-          opacity: calc(0.18 + 0.37 * var(--fig-k, 1));
-          animation: spin 8s linear infinite;
-          z-index:2; pointer-events:none;
-        }
+<body>
+  <div id="bg"></div>
+  <div id="field"></div>
 
-      @keyframes spin { to { --ang:360deg; } }
-
-      /* Vignette + scanline halus */
-      .fx-top{
-          position:absolute; inset:0; pointer-events:none; z-index:3;
-          background:
-            radial-gradient(120% 120% at 50% 50%,
-              transparent 55%,
-              rgba(0,0,0, calc(0.10 + 0.18 * var(--fig-k, 1))) 80%),
-            repeating-linear-gradient(0deg,
-              transparent 0 calc(2.4px + 1.2px * var(--fig-k, 1)),
-              rgba(255,255,255, calc(0.01 + 0.02 * var(--fig-k, 1)))
-              calc(3.0px + 1.0px * var(--fig-k, 1)) calc(3.6px + 1.2px * var(--fig-k, 1)));
-        }
-
-
-      /* Hint tap */
-      .hud-hint{
-        position:absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);  /* center horizontal & vertical */
-        color:#fff; font-weight:800; letter-spacing:.4px; font-size:16px;
-        padding:10px 14px; border-radius:999px;
-        background: hsl(0 0% 100%/.14); backdrop-filter: blur(8px);
-        box-shadow: 0 8px 30px rgba(0,0,0,.35); z-index:4;
-        animation: pop 1.2s ease infinite alternate;
-      }
-      @keyframes pop { to { transform: translateX(-50%) scale(1.06); } }
-    </style>
-  </head>
-  <body>
-    <div id="bg" aria-hidden="true"></div>
-
-    <div id="app">
-      <audio id="bgm" preload="auto" loop muted></audio>
-      <audio id="oneShot" preload="auto"></audio>
-
-      <div class="nav-container" id="nav">
-        <a href="wedding-website/index.html" target="_blank" rel="noopener" class="nav-btn">Wedding</a>
-        <a href="https://nwr27.github.io/nanawartana" target="_blank" rel="noopener" class="nav-btn">Portfolio</a>
-      </div>
-
-      <span class="teks-pemeliharaan" id="maintText">sedang pemeliharaan, server sedang galau🙂 (tap 1x)</span>
-
-      <div id="field" aria-hidden="true"></div>
-
-      <!-- Overlay (mode 1 maintenance flow) -->
-      <div id="imgOverlay" class="image-overlay" aria-hidden="true">
-        <img src="image1.jpg" alt="image" id="overlayImg" />
-      </div>
-
-      <!-- MODE 2 Slider IG-like -->
-      <div id="sliderWrap" class="slider-wrap" aria-hidden="true" style="display:none;">
-        <div class="slider" id="slider">
-          <button class="arrow left" id="btnPrev" aria-label="Sebelumnya">‹</button>
-          <div class="slides" id="slides"></div>
-          <button class="arrow right" id="btnNext" aria-label="Berikutnya">›</button>
-          <div class="dots" id="dots"></div>
-        </div>
-      </div>
-
-      <!-- MODE 3: Video Nabilla + Figura -->
-      <div id="mode3Wrap" class="mode3-wrap" aria-hidden="true" style="display:none;">
-        <div class="mode3-stage neon-frame" id="stage3">
-          <video id="video3" playsinline webkit-playsinline preload="metadata"></video>
-          <canvas id="canvas3"></canvas>
-          <div id="fxTop" class="fx-top"></div>
-          <div id="hint3" class="hud-hint">tap 1x caaaa</div>
-        </div>
+  <div class="apology-wrap">
+    <div>
+      <div class="apology-title">Apology Boy</div>
+      <div class="apology-sub">
+        Aku tahu aku salah.<br>
+        Aku nggak minta dimengerti,<br>
+        aku cuma ingin minta maaf… dengan tulus.
       </div>
     </div>
+  </div>
 
-    <script>
-      // 0.0 = tipis, 1.0 = default/tebal
-      const FIG_INTENSITY = 0.35;   // ganti ke 0.2 (sangat tipis) – 0.6 (sedang) – 1.0 (tebal)
-      /* =========================
-         KONFIGURASI
-      ==========================*/
-      const MODE = 3;            // 1 = tampilan lama, 2 = IG-like feed, 3 = Video Nabilla + Figura
-      const MAINTENANCE = false; // dipakai saat MODE === 1
+  <div class="tap-hint">tap 1x</div>
 
-      // Media untuk MODE 2 (campur gambar & video)
-      const MEDIA_LIST = [
-        "media/ba045616-5fd6-445a-a395-a80be5b9af0b.mp4",
-        "media/IMG_1842.JPG",
-        "media/IMG_1471.JPG",
-        "media/v14044g50000d2kop9fog65obsojp170.mp4",
-        "media/IMG_1714.mp4",
-        "media/IMG_1526.mp4",
-        "media/IMG_1524.mp4",
-        "media/IMG_1893.mp4",
-        "media/IMG_2371.mp4",
-        "media/IMG_2428.mp4",
-        "media/IMG_2429.mp4",
-        "media/IMG_2378.mp4",
-        "media/IMG_2430.mp4",
-        "media/IMG_1516.mp4",
-        "media/IMG_0450.jpg",
-        "media/IMG_0455.jpg",
-        "media/IMG_0457.jpg",
-        "media/IMG_1427.jpg",
-        "media/IMG_1433.jpg",
-        "media/IMG_1438.jpg",
-        "media/IMG_1443.jpg",
-        "media/IMG_1449.jpg",
-        "media/IMG_1477.jpg",
-        "media/IMG_1486.jpg",
-        "media/IMG_1487.jpg",
-        "media/IMG_1492.jpg",
-        "media/IMG_1495.jpg",
-        "media/IMG_1497.jpg",
-        "media/IMG_1498.jpg",
-        "media/IMG_1500.jpg",
-        "media/IMG_1515.jpg",
-        "media/IMG_1530.jpg",
-        "media/IMG_1706.jpg",
-        "media/IMG_1710.jpg",
-        "media/IMG_1713.jpg",
-        "media/IMG_1729.jpg",
-        "media/IMG_1730.jpg",
-        "media/IMG_1733.jpg",
-        "media/IMG_1734.jpg",
-        "media/IMG_1768.jpg",
-        "media/IMG_1774.jpg",
-        "media/IMG_1991.jpg",
-        "media/IMG_1992.jpg",
-        "media/IMG_2199.jpg",
-        "media/IMG_2200.jpg",
-        "media/IMG_2213.jpg",
-        "media/IMG_2218.jpg",
-        "media/IMG_2331.jpg",
-        "media/IMG_2337.jpg",
-        "media/IMG_2349.jpg",
-        "media/IMG_2366.jpg",
-        "media/IMG_2367.jpg",
-        "media/IMG_2368.jpg",
-        "media/IMG_2369.jpg",
-        "media/IMG_2370.jpg",
-        "media/IMG_2375.jpg",
-        "media/IMG_2376.jpg",
-        "media/IMG_2377.jpg",
-        "media/IMG_2406.jpg",
-        "media/IMG_2407.jpg",
-        "media/IMG_2423.jpg",
-        "media/IMG_2424.jpg",
-        "media/IMG_2425.jpg",
-        "media/IMG_2426.jpg",
-        "media/IMG_2427.jpg",
-      ];
+  <audio id="bgm" src="Naif.mp3" loop muted></audio>
 
-      /* =========================
-         UTIL
-      ==========================*/
-      function rnd(a,b){ return a + Math.random()*(b-a); }
-      function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+  <script>
+    const field = document.getElementById("field");
+    const audio = document.getElementById("bgm");
 
-      const field = document.getElementById("field");
-      const nav = document.getElementById("nav");
-      const maintText = document.getElementById("maintText");
-      const audio = document.getElementById("bgm");
-      const imgOverlay = document.getElementById("imgOverlay");
-      const overlayImg = document.getElementById("overlayImg");
-      const oneShot = document.getElementById("oneShot");
+    function rnd(a,b){ return a + Math.random()*(b-a); }
 
-      const sliderWrap = document.getElementById("sliderWrap");
-      const slidesEl = document.getElementById("slides");
-      const dotsEl = document.getElementById("dots");
-      const btnPrev = document.getElementById("btnPrev");
-      const btnNext = document.getElementById("btnNext");
+    function spawnHeart(){
+      const h = document.createElement("span");
+      h.className = "heart";
+      h.textContent = "🤍";
+      h.style.setProperty("--x", rnd(innerWidth*0.3, innerWidth*0.7) + "px");
+      h.style.setProperty("--y", innerHeight + "px");
+      h.style.setProperty("--dur", rnd(6,9) + "s");
+      h.addEventListener("animationend", ()=>h.remove());
+      field.appendChild(h);
+    }
 
-      // MODE 3 refs
-      const mode3Wrap = document.getElementById("mode3Wrap");
-      const video3 = document.getElementById("video3");
-      const canvas3 = document.getElementById("canvas3");
-      const stage3 = document.getElementById("stage3");
-      stage3.style.setProperty("--fig-k", FIG_INTENSITY);
-      const hint3 = document.getElementById("hint3");
+    function spawnWord(text){
+      const w = document.createElement("span");
+      w.className = "word";
+      w.textContent = text;
+      w.style.setProperty("--x", innerWidth/2 + "px");
+      w.style.setProperty("--y", innerHeight - 40 + "px");
+      w.style.setProperty("--dur", "8s");
+      w.addEventListener("animationend", ()=>w.remove());
+      field.appendChild(w);
+    }
 
-      function fadeInAudio(el, duration = 1800) {
-        el.volume = 0; el.muted = false;
-        el.play().catch(()=>{});
-        const t0 = performance.now();
-        function step(t){ const k = Math.min(1,(t-t0)/duration); el.volume = k; if(k<1) requestAnimationFrame(step); }
-        requestAnimationFrame(step);
-      }
-      function fadeOutAudio(el, duration = 600) {
-        if(!el) return; const startVol = el.volume ?? 1; const t0 = performance.now();
-        function step(t){
-          const k = Math.min(1,(t-t0)/duration); el.volume = Math.max(0,startVol*(1-k));
-          if(k<1) requestAnimationFrame(step); else { el.pause(); el.currentTime=0; el.volume=startVol; }
-        }
-        requestAnimationFrame(step);
-      }
+    const WORDS = [
+      "Aku minta maaf",
+      "Aku sadar aku salah",
+      "Aku menyesal",
+      "Aku nggak bermaksud nyakitin kamu",
+      "Apology Boy"
+    ];
 
-      /* ===== Mode 1 (existing) ===== */
-      function trumpetBurst(count = 24) {
-        for (let i=0;i<count;i++){
-          const x = rnd(innerWidth*.1, innerWidth*.9);
-          const y = rnd(innerHeight*.55, innerHeight*.85);
-          const el = document.createElement("span");
-          el.className = "heart"; el.textContent = "🎺";
-          const size=rnd(18,28), dur=rnd(1.8,3.2), drift=rnd(-120,120)+"px", rise=rnd(60,140)+"px";
-          el.style.setProperty("--left", x+"px"); el.style.setProperty("--top", y+"px");
-          el.style.setProperty("--size", size+"px"); el.style.setProperty("--dur", dur+"s");
-          el.style.setProperty("--dx", drift); el.style.setProperty("--dy", rise);
-          el.style.setProperty("--h", "45"); el.style.setProperty("--rot", rnd(-20,20)+"deg"); el.style.setProperty("--rotEnd", rnd(-60,60)+"deg");
-          el.style.setProperty("--scale","1"); el.style.setProperty("--scaleEnd","1");
-          el.addEventListener("animationend",()=>el.remove()); field.appendChild(el);
-        }
-      }
-      function spawnHeart(x,y,n=1){
-        for(let i=0;i<n;i++){
-          const el=document.createElement("span"); el.className="heart"; el.textContent=pick(["❤️","💕","💓","❤️‍🩹","💖","❤️‍🔥"]);
-          const size=28, dur=4.8, drift="0px", rise="90vh", hue=rnd(330,360).toFixed(1);
-          el.style.setProperty("--left",x+"px"); el.style.setProperty("--top",y+"px");
-          el.style.setProperty("--size",size+"px"); el.style.setProperty("--dur",dur+"s");
-          el.style.setProperty("--dx",drift); el.style.setProperty("--dy",rise);
-          el.style.setProperty("--h",hue); el.style.setProperty("--rot","0deg"); el.style.setProperty("--rotEnd","0deg");
-          el.style.setProperty("--scale","1"); el.style.setProperty("--scaleEnd","1.18");
-          el.addEventListener("animationend",()=>el.remove()); field.appendChild(el);
-        }
-      }
-      function spawnWord(text,x,y,opts={}) {
-        const {dur=5.2,size=22,drift="0px",rise="90vh"} = opts;
-        const el=document.createElement("span"); el.className="word"; el.textContent=text;
-        el.style.setProperty("--left",x+"px"); el.style.setProperty("--top",y+"px");
-        el.style.setProperty("--size",size+"px"); el.style.setProperty("--dur",dur+"s");
-        el.style.setProperty("--dx",drift); el.style.setProperty("--dy",rise);
-        el.style.setProperty("--rot","0deg"); el.style.setProperty("--rotEnd","0deg");
-        el.style.setProperty("--scale","1"); el.style.setProperty("--scaleEnd","1.08");
-        el.addEventListener("animationend",()=>el.remove()); field.appendChild(el);
-      }
+    let i = 0;
+    setInterval(spawnHeart, 800);
+    setInterval(()=>{
+      spawnWord(WORDS[i % WORDS.length]);
+      i++;
+    }, 3200);
 
-      addEventListener("mousemove",(e)=>{
-        document.body.style.setProperty("--mx",(e.clientX/innerWidth)*100+"%");
-        document.body.style.setProperty("--my",(e.clientY/innerHeight)*100+"%");
-      });
+    document.addEventListener("click", ()=>{
+      audio.muted = false;
+      audio.play().catch(()=>{});
+      document.querySelector(".tap-hint").style.display = "none";
+    }, { once:true });
 
-      function runMode1(){
-        if (MAINTENANCE){
-          nav.style.display="none"; maintText.style.display="block"; audio.src="tbdw.mp3";
-          const GALAU=["Mau foto?, kirim 'MINTAFOTO#plis' di wa","aku lagi capek dan sakit hati sama perasaan ini","atau apa?"];
-          const INTERVAL_MS=4000;
-          let phase="idle", started=false, running=true, idxText=0, lastTime=performance.now(), acc=0;
-          const IMAGE_LIST=["image1.png","image2.png","image3.png","image4.png","image5.png"]; let imgIndex=0;
-          function showImageAt(i){ overlayImg.src=IMAGE_LIST[i]; imgOverlay.classList.add("show"); }
-          function hideImage(){ imgOverlay.classList.remove("show"); }
-          field.addEventListener("click",()=>{ if(phase==="idle"){ phase="images"; imgIndex=0; showImageAt(imgIndex);} });
-          imgOverlay.addEventListener("click",()=>{
-            if(phase!=="images") return; imgIndex++;
-            if(imgIndex<IMAGE_LIST.length){
-              showImageAt(imgIndex);
-              if(imgIndex===1){ oneShot.src="menuju senja.mp3"; oneShot.currentTime=0; oneShot.loop=false; oneShot.volume=.9; oneShot.play().catch(()=>{}); }
-            } else {
-              if(!oneShot.paused) fadeOutAudio(oneShot,600); hideImage(); trumpetBurst(26);
-              maintText.style.display="none"; audio.src="tbdw.mp3"; fadeInAudio(audio,1800);
-              spawnWord(GALAU[idxText], innerWidth/2, innerHeight-44, {dur:8.0}); idxText=(idxText+1)%GALAU.length;
-              acc=0; lastTime=performance.now(); started=true; phase="running";
-            }
-          });
-          function loopMaint(now){
-            if(!running || !started){ lastTime=now; requestAnimationFrame(loopMaint); return; }
-            const dt=now-lastTime; lastTime=now; acc+=dt;
-            while(acc>=INTERVAL_MS){ spawnWord(GALAU[idxText], innerWidth/2, innerHeight-44, {dur:8.0}); idxText=(idxText+1)%GALAU.length; acc-=INTERVAL_MS; }
-            requestAnimationFrame(loopMaint);
-          }
-          requestAnimationFrame(loopMaint);
-          document.addEventListener("visibilitychange",()=>{ if(document.hidden){ running=false; acc=0; } else { running=true; lastTime=performance.now(); }});
-        } else {
-          maintText.style.display="none"; nav.style.display="flex"; audio.src="Naif.mp3";
-          const TEXTS=["From Nana Wartana","I’ll try to make you believe in men again","Musik nyala gak?"];
-          const HEARTS_PER_SEC=16, WORDS_PER_SEC=1, TAP_HINT_EVERY=2000;
-          let hasStarted=false, running=true, accHeart=0, accWord=0, lastTime=performance.now(), hintTimer=0;
-          field.addEventListener("click",()=>{ if(hasStarted) return; hasStarted=true; audio.muted=false; audio.play().catch(()=>{}); }, {once:true});
-          function loopNormal(now){
-            if(!running){ lastTime=now; requestAnimationFrame(loopNormal); return; }
-            const dt=Math.min(0.05,(now-lastTime)/1000); lastTime=now;
-            accHeart+=dt*HEARTS_PER_SEC; while(accHeart>=1){ const x=rnd(innerWidth*.2, innerWidth*.8), y=innerHeight-24; spawnHeart(x,y,1); accHeart-=1; }
-            if(!hasStarted){ hintTimer+=dt*1000; if(hintTimer>=TAP_HINT_EVERY){ spawnWord("Tap layar 1x caaaaaaa!!", innerWidth/2, innerHeight-44); hintTimer=0; } }
-            if(hasStarted){ accWord+=dt*WORDS_PER_SEC; while(accWord>=1){ const x=rnd(innerWidth*.25, innerWidth*.75), y=innerHeight-44; spawnWord(pick(TEXTS), x, y); accWord-=1; } }
-            requestAnimationFrame(loopNormal);
-          }
-          requestAnimationFrame(loopNormal);
-          document.addEventListener("visibilitychange",()=>{ if(document.hidden){ running=false; accHeart=0; accWord=0; hintTimer=0; } else { running=true; lastTime=performance.now(); }});
-        }
-      }
-
-      /* ===== MODE 2: Slider IG-like ===== */
-      let current = 0;
-      let hasSwipedOnce = false;
-      let isDragging = false, startX = 0, baseTx = 0;
-      function vw(){ return window.innerWidth || document.documentElement.clientWidth; }
-
-      function createSlideEl(src){
-        const wrap=document.createElement("div"); wrap.className="slide";
-        if (/\.(mp4|webm|ogg)$/i.test(src)) {
-          const v=document.createElement("video");
-          v.src=src; v.muted=true; v.loop=true; v.playsInline=true; v.preload="metadata"; v.controls=false;
-          wrap.appendChild(v);
-        } else {
-          const img=document.createElement("img");
-          img.src=src; img.loading="lazy"; img.decoding="async"; img.draggable=false;
-          wrap.appendChild(img);
-        }
-        return wrap;
-      }
-
-      function setActiveMediaPlayback(index){
-        slidesEl.querySelectorAll("video").forEach(v=>{ v.pause(); v.currentTime=0; });
-        const active=slidesEl.children[index]; if(!active) return;
-        const vid=active.querySelector("video"); if(vid) { vid.play().catch(()=>{}); }
-      }
-
-      function renderDots(){
-        dotsEl.innerHTML=""; MEDIA_LIST.forEach((_,i)=>{ const d=document.createElement("div"); d.className="dot"+(i===current?" active":""); d.addEventListener("click",()=>goTo(i)); dotsEl.appendChild(d); });
-      }
-      function updateDots(){ dotsEl.querySelectorAll(".dot").forEach((d,i)=> d.classList.toggle("active", i===current)); }
-
-      function applyTransformPx(px){ slidesEl.style.transform = `translate3d(${px}px,0,0)`; }
-
-      function goTo(i, withAnim=true){
-        current = Math.max(0, Math.min(MEDIA_LIST.length-1, i));
-        slidesEl.style.transition = withAnim ? "transform 420ms ease" : "none";
-        const tx = -current * vw();
-        applyTransformPx(tx); updateDots(); setActiveMediaPlayback(current);
-      }
-
-      function next(){ goTo(current+1); }
-      function prev(){ goTo(current-1); }
-
-      function attachDragSwipe(){
-        let pointerId = null;
-        const threshold = () => Math.max(60, vw()*0.12);
-
-        const onDown = (e) => {
-          if (e.pointerType === "mouse" && e.button !== 0) return;
-          pointerId = e.pointerId;
-          try { slidesEl.setPointerCapture(pointerId); } catch {}
-          isDragging = true; startX = e.clientX; baseTx = -current * vw();
-          slidesEl.style.transition = "none";
-          document.body.classList.add("dragging"); sliderWrap.classList.add("dragging"); slidesEl.classList.add("dragging");
-          if (e.pointerType === "mouse") e.preventDefault();
-        };
-
-        const onMove = (e) => {
-          if (!isDragging || e.pointerId !== pointerId) return;
-          e.preventDefault();
-          const dx = e.clientX - startX;
-          const maxLeft  = 0;
-          const maxRight = -(MEDIA_LIST.length - 1) * vw();
-          let tx = baseTx + dx;
-          const slack = vw() * 0.12;
-          if (tx > maxLeft + slack)  tx = maxLeft + slack;
-          if (tx < maxRight - slack) tx = maxRight - slack;
-          applyTransformPx(tx);
-        };
-
-        const endDrag = (e) => {
-          if (!isDragging || (pointerId !== null && e.pointerId !== pointerId)) return;
-          try { slidesEl.releasePointerCapture(pointerId); } catch {}
-          pointerId = null;
-
-          const dx = e.clientX - startX;
-          isDragging = false;
-
-          document.body.classList.remove("dragging"); sliderWrap.classList.remove("dragging"); slidesEl.classList.remove("dragging");
-
-          if (!hasSwipedOnce && Math.abs(dx) > 20) {
-            hasSwipedOnce = true; audio.src = "Berdua Saja Rahasia.mp3"; fadeInAudio(audio, 1200);
-          }
-
-          if (dx > threshold())      prev();
-          else if (dx < -threshold()) next();
-          else                        goTo(current);
-        };
-
-        slidesEl.addEventListener("pointerdown", onDown);
-        slidesEl.addEventListener("pointermove", onMove);
-        slidesEl.addEventListener("pointerup", endDrag);
-        slidesEl.addEventListener("pointercancel", endDrag);
-        slidesEl.addEventListener("lostpointercapture", () => {
-          if (isDragging) {
-            isDragging = false;
-            document.body.classList.remove("dragging"); sliderWrap.classList.remove("dragging"); slidesEl.classList.remove("dragging");
-            goTo(current, false);
-          }
-        });
-        slidesEl.addEventListener("contextmenu", e => e.preventDefault());
-
-        window.addEventListener("blur", () => {
-          if (isDragging) {
-            isDragging = false;
-            try { if (pointerId != null) slidesEl.releasePointerCapture(pointerId); } catch {}
-            pointerId = null;
-            document.body.classList.remove("dragging"); sliderWrap.classList.remove("dragging"); slidesEl.classList.remove("dragging");
-            goTo(current, false);
-          }
-        });
-
-        window.addEventListener("keydown", (e) => {
-          if (e.key === "ArrowRight") { if (!hasSwipedOnce){ hasSwipedOnce=true; audio.src="Berdua Saja Rahasia.mp3"; fadeInAudio(audio,1200);} next(); }
-          if (e.key === "ArrowLeft")  { if (!hasSwipedOnce){ hasSwipedOnce=true; audio.src="Berdua Saja Rahasia.mp3"; fadeInAudio(audio,1200);} prev(); }
-        });
-      }
-
-      function layoutSlides(){
-        [...slidesEl.children].forEach(sl=>{
-          sl.style.width = `${vw()}px`;
-          sl.style.height = `${window.innerHeight}px`;
-        });
-        goTo(current, false);
-      }
-
-      function initMode2(){
-        sliderWrap.style.display = "grid";
-        nav.style.display = "none";
-        maintText.style.display = "none";
-        field.style.display = "none";
-
-        slidesEl.innerHTML = "";
-        MEDIA_LIST.forEach(src => slidesEl.appendChild(createSlideEl(src)));
-        renderDots();
-
-        attachDragSwipe();
-
-        current = 0;
-        layoutSlides();
-        setActiveMediaPlayback(0);
-
-        window.addEventListener("resize", layoutSlides);
-
-        document.addEventListener("visibilitychange", () => {
-          if (document.hidden) { slidesEl.querySelectorAll("video").forEach(v=>v.pause()); }
-          else { setActiveMediaPlayback(current); }
-        });
-      }
-
-      /* ===== MODE 3: Video Nabilla + Canvas Figura ===== */
-      function initMode3(){
-        const K = FIG_INTENSITY;
-
-        // gunakan K untuk “menipiskan” efek
-        const MAX_PART = Math.round(40 + 80 * K);          // 40..120
-        const HEART_SPAWN_P = 0.08 + 0.27 * K;             // 0.08..0.35
-        const BOKEH_FREQ_SCALE = 0.4 + 0.6 * K;            // 0.4..1.0
-        // Matikan audio latar jika ada
-        try { if (!audio.paused) fadeOutAudio(audio, 400); } catch {}
-        nav.style.display = "none";
-        maintText.style.display = "none";
-        field.style.display = "none";
-        sliderWrap.style.display = "none";
-
-        mode3Wrap.style.display = "grid";
-        video3.src = "IMG_2826.mp4";    // path videomu
-        video3.controls = false;       // biar clean
-        video3.muted = false;          // penting: gunakan tap untuk izin audio
-        video3.loop = false;           // kalau mau ulangi, set true
-        video3.playsInline = true;
-
-        // Ukuran canvas = viewport
-        function resizeCanvas(){
-          canvas3.width = stage3.clientWidth;
-          canvas3.height = stage3.clientHeight;
-        }
-        resizeCanvas();
-        window.addEventListener("resize", resizeCanvas);
-
-        // Efek partikel/bokeh + percikan hati
-        const ctx = canvas3.getContext("2d");
-        let particles = [];
-        // const MAX_PART = 120;
-
-        function spawnParticle(type){
-          const w = canvas3.width, h = canvas3.height;
-          if (type === "heart"){
-            particles.push({
-              kind:"heart",
-              x: rnd(w*0.15,w*0.85), y: h+20,
-              vx: rnd(-0.2,0.2), vy: rnd(-0.9,-0.4),
-              size: rnd(8, 12 + 10 * K), life: rnd(1.8, 2.6 + 1.6 * K), t:0, hue: rnd(330,360)
-            });
-          } else {
-            particles.push({
-              kind:"bokeh",
-              x: rnd(-50,w+50), y: rnd(-20,h*0.85),
-              vx: rnd(-0.05,0.05), vy: rnd(-0.02,0.02),
-              r: rnd(8, 20 + 20 * K), life: rnd(3,6), t:0, alpha: rnd(0.04, 0.10 + 0.08 * K), hue: rnd(180,320)
-            });
-          }
-          if (particles.length > 300) particles = particles.slice(-300);
-        }
-
-        let playing = false;
-        let last = performance.now();
-
-        function draw(now){
-          const dt = Math.min(0.033,(now-last)/1000); last = now;
-          const w = canvas3.width, h = canvas3.height;
-          ctx.clearRect(0,0,w,h);
-
-          if (playing){
-            if (particles.length < MAX_PART && Math.random() < (0.6 * BOKEH_FREQ_SCALE))
-              spawnParticle("bokeh");
-            if (Math.random() < HEART_SPAWN_P)
-              spawnParticle("heart");
-          }
-
-          // glow dasar
-          const grad = ctx.createRadialGradient(w*0.5,h*0.55,10,w*0.5,h*0.5,Math.max(w,h)*0.6);
-          grad.addColorStop(0,"rgba(255,255,255,0.02)");
-          grad.addColorStop(1,"rgba(0,0,0,0)");
-          ctx.fillStyle = grad;
-          ctx.fillRect(0,0,w,h);
-
-          // update & render partikel
-          for (let i=particles.length-1;i>=0;i--){
-            const p = particles[i];
-            p.t += dt;
-            if (p.t > p.life){ particles.splice(i,1); continue; }
-
-            if (p.kind === "bokeh"){
-              p.x += p.vx*(1+Math.sin(now*0.001+p.x)*0.2);
-              p.y += p.vy*(1+Math.cos(now*0.001+p.y)*0.2);
-              const a = p.alpha * (1 - p.t/p.life);
-              ctx.beginPath();
-              ctx.fillStyle = `hsla(${p.hue},100%,60%,${a})`;
-              ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
-              ctx.fill();
-              // inner highlight
-              ctx.beginPath();
-              ctx.fillStyle = `hsla(${p.hue},100%,70%,${a*0.6})`;
-              ctx.arc(p.x- p.r*0.3,p.y- p.r*0.3,p.r*0.4,0,Math.PI*2);
-              ctx.fill();
-            } else {
-              // heart
-              p.x += p.vx;
-              p.y += p.vy*60*dt;
-              const k = (1 - p.t/p.life);
-              const s = p.size * (0.9 + 0.2*Math.sin(now*0.006+p.x));
-              ctx.save();
-              ctx.translate(p.x,p.y);
-              ctx.scale(s*0.08,s*0.08);
-              ctx.globalAlpha = Math.max(0,k);
-              ctx.fillStyle = `hsla(${p.hue},100%,60%,${0.85*k})`;
-              // path hati
-              ctx.beginPath();
-              ctx.moveTo(0,-12);
-              ctx.bezierCurveTo(12,-28, 36,-22, 36,-4);
-              ctx.bezierCurveTo(36,16, 18,28, 0,42);
-              ctx.bezierCurveTo(-18,28, -36,16, -36,-4);
-              ctx.bezierCurveTo(-36,-22, -12,-28, 0,-12);
-              ctx.closePath();
-              ctx.shadowColor = `hsla(${p.hue},100%,60%,0.6)`;
-              ctx.shadowBlur = 6 + 10 * K;  // 6..16
-              ctx.fill();
-              ctx.restore();
-            }
-          }
-
-          requestAnimationFrame(draw);
-        }
-        requestAnimationFrame(draw);
-
-        // Mulai saat TAP 1x
-        const startOnce = () => {
-          hint3.style.display = "none";
-          // jaga-jaga: hentikan bgm kalau ada
-          try { audio.pause(); } catch {}
-          video3.muted = false;
-          const playPromise = video3.play();
-          playing = true;
-          if (playPromise) playPromise.catch(()=> {
-            // jika gagal (misal tak dianggap gesture), paksa dengan user tap berikutnya
-            hint3.style.display = "block";
-          });
-        };
-
-        // Tap/Click di mana saja pada stage memulai atau toggle pause/play
-        stage3.addEventListener("click", ()=>{
-          if (video3.paused) startOnce();
-          else video3.pause();
-        });
-
-        // Saat video selesai, munculkan hint agar bisa diputar lagi
-        video3.addEventListener("ended", ()=>{
-          playing = false;
-          hint3.style.display = "block";
-        });
-
-        // Saat tab disembunyikan, hentikan visual berat
-        document.addEventListener("visibilitychange", ()=>{
-          if (document.hidden){ playing = false; video3.pause(); }
-        });
-      }
-
-      /* =========================
-         BOOTSTRAP
-      ==========================*/
-      if (MODE === 1) runMode1();
-      else if (MODE === 2) initMode2();
-      else if (MODE === 3) initMode3();
-
-      // Spotlight bg mengikuti mouse
-      document.addEventListener("mousemove", (e) => {
-        document.body.style.setProperty("--mx", (e.clientX/innerWidth)*100+"%");
-        document.body.style.setProperty("--my", (e.clientY/innerHeight)*100+"%");
-      });
-    </script>
-  </body>
+    document.addEventListener("mousemove", e=>{
+      document.body.style.setProperty("--mx", e.clientX/innerWidth*100+"%");
+      document.body.style.setProperty("--my", e.clientY/innerHeight*100+"%");
+    });
+  </script>
+</body>
 </html>
